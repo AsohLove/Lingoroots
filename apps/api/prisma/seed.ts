@@ -11,10 +11,21 @@ const prisma = new PrismaClient({
 });
 
 async function main() {
-  await prisma.language.create({
-    data: {
+  const ewondo = await prisma.language.findFirst({
+    where: {
       name: 'Ewondo',
-      description: 'A language spoken primarily in Cameroon.',
+    },
+  });
+
+  if (!ewondo) {
+    throw new Error('Ewondo language was not found');
+  }
+
+  await prisma.course.create({
+    data: {
+      languageId: ewondo.id,
+      name: 'Ewondo Beginner',
+      description: 'An introductory course for learning Ewondo.',
     },
   });
 }
