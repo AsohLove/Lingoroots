@@ -27,3 +27,13 @@ export type Language = Prisma.LanguageModel
  * 
  */
 export type Course = Prisma.CourseModel
+/**
+ * Model Level
+ * 
+ */
+export type Level = Prisma.LevelModel
+/**
+ * Model Unit
+ * 
+ */
+export type Unit = Prisma.UnitModel

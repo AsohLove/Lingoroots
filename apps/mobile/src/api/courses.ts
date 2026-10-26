@@ -1,10 +1,20 @@
 import { API_BASE_URL } from '../config/api';
 
+export type Level = {
+  id: string;
+  courseId: string;
+  code: string;
+  name: string;
+  description: string | null;
+  order: number;
+};
+
 export type Course = {
   id: string;
   languageId: string;
   name: string;
   description: string | null;
+  levels: Level[];
 };
 
 export async function getCoursesByLanguage(

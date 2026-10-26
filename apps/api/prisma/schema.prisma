@@ -26,4 +26,31 @@ model Course {
   updatedAt   DateTime @updatedAt
 
   language    Language @relation(fields: [languageId], references: [id])
+  levels      Level[]
+}
+
+model Level {
+  id          String   @id @default(uuid())
+  courseId    String
+  code        String
+  name        String
+  description String?
+  order       Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  course      Course   @relation(fields: [courseId], references: [id])
+  units       Unit[]
+}
+
+model Unit {
+  id          String   @id @default(uuid())
+  levelId     String
+  name        String
+  description String?
+  order       Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  level       Level    @relation(fields: [levelId], references: [id])
 }

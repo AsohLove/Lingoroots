@@ -10,4 +10,6 @@
  */
 export type * from './models/Language.js'
 export type * from './models/Course.js'
+export type * from './models/Level.js'
+export type * from './models/Unit.js'
 export type * from './commonInputTypes.js'

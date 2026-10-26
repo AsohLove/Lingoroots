@@ -5,6 +5,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { API_BASE_URL } from "./src/config/api";
 import { getLanguages, type Language } from "./src/api/languages";
 import { getCoursesByLanguage, type Course } from "./src/api/courses";
+import { getUnitsByLevel, type Unit } from "./src/api/units";
 
 export default function App() {
   const [apiStatus, setApiStatus] = useState("Checking...");
@@ -12,6 +13,8 @@ export default function App() {
   const [languageStatus, setLanguageStatus] = useState("Loading...");
   const [courses, setCourses] = useState<Course[]>([]);
   const [courseStatus, setCourseStatus] = useState("Waiting...");
+  const [units, setUnits] = useState<Unit[]>([]);
+  const [unitStatus, setUnitStatus] = useState("Waiting...");
 
   useEffect(() => {
     async function loadData() {
@@ -29,6 +32,7 @@ export default function App() {
         }
 
         const languagesData = await getLanguages();
+
         setLanguages(languagesData);
         setLanguageStatus("Loaded ✓");
 
@@ -39,12 +43,26 @@ export default function App() {
 
           setCourses(coursesData);
           setCourseStatus("Loaded ✓");
+
+          const firstCourse = coursesData[0];
+
+          if (firstCourse?.levels.length > 0) {
+            const firstLevel = firstCourse.levels[0];
+
+            const unitsData = await getUnitsByLevel(firstLevel.id);
+
+            setUnits(unitsData);
+            setUnitStatus("Loaded ✓");
+          } else {
+            setUnitStatus("No level available");
+          }
         } else {
           setCourseStatus("No language available");
         }
       } catch {
         setApiStatus("Connection failed");
         setLanguageStatus("Failed to load");
+        setUnitStatus("Failed to load");
       }
     }
 
@@ -81,6 +99,7 @@ export default function App() {
           </View>
         ))}
       </View>
+
       <View style={styles.coursesCard}>
         <Text style={styles.sectionTitle}>Courses</Text>
 
@@ -91,8 +110,44 @@ export default function App() {
             <Text style={styles.courseName}>{course.name}</Text>
 
             {course.description && (
-              <Text style={styles.courseDescription}>{course.description}</Text>
+              <Text style={styles.courseDescription}>
+                {course.description}
+              </Text>
             )}
+
+            {course.levels.map((level) => (
+              <View key={level.id} style={styles.levelItem}>
+                <Text style={styles.levelCode}>{level.code}</Text>
+
+                <Text style={styles.levelName}>{level.name}</Text>
+
+                {level.description && (
+                  <Text style={styles.levelDescription}>
+                    {level.description}
+                  </Text>
+                )}
+              </View>
+            ))}
+
+            <View style={styles.unitsSection}>
+              <Text style={styles.unitSectionTitle}>Units</Text>
+
+              <Text style={styles.statusText}>{unitStatus}</Text>
+
+              {units.map((unit) => (
+                <View key={unit.id} style={styles.unitItem}>
+                  <Text style={styles.unitName}>
+                    Unit {unit.order} — {unit.name}
+                  </Text>
+
+                  {unit.description && (
+                    <Text style={styles.unitDescription}>
+                      {unit.description}
+                    </Text>
+                  )}
+                </View>
+              ))}
+            </View>
           </View>
         ))}
       </View>
@@ -169,6 +224,45 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   courseDescription: {
+    fontSize: 14,
+    marginTop: 4,
+  },
+  levelItem: {
+    marginTop: 12,
+    paddingLeft: 12,
+    borderLeftWidth: 2,
+  },
+  levelCode: {
+    fontSize: 14,
+    fontWeight: "700",
+  },
+  levelName: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginTop: 2,
+  },
+  levelDescription: {
+    fontSize: 14,
+    marginTop: 4,
+  },
+  unitsSection: {
+    marginTop: 16,
+  },
+  unitSectionTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    marginBottom: 8,
+  },
+  unitItem: {
+    marginTop: 12,
+    paddingLeft: 12,
+    borderLeftWidth: 2,
+  },
+  unitName: {
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  unitDescription: {
     fontSize: 14,
     marginTop: 4,
   },
