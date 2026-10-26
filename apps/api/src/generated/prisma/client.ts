@@ -61,3 +61,8 @@ export type Level = Prisma.LevelModel
  * 
  */
 export type Unit = Prisma.UnitModel
+/**
+ * Model Lesson
+ * 
+ */
+export type Lesson = Prisma.LessonModel

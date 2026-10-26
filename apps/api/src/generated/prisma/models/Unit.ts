@@ -233,6 +233,7 @@ export type UnitWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"Unit"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Unit"> | Date | string
   level?: Prisma.XOR<Prisma.LevelScalarRelationFilter, Prisma.LevelWhereInput>
+  lessons?: Prisma.LessonListRelationFilter
 }
 
 export type UnitOrderByWithRelationInput = {
@@ -244,6 +245,7 @@ export type UnitOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   level?: Prisma.LevelOrderByWithRelationInput
+  lessons?: Prisma.LessonOrderByRelationAggregateInput
 }
 
 export type UnitWhereUniqueInput = Prisma.AtLeast<{
@@ -258,6 +260,7 @@ export type UnitWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"Unit"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Unit"> | Date | string
   level?: Prisma.XOR<Prisma.LevelScalarRelationFilter, Prisma.LevelWhereInput>
+  lessons?: Prisma.LessonListRelationFilter
 }, "id">
 
 export type UnitOrderByWithAggregationInput = {
@@ -296,6 +299,7 @@ export type UnitCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   level: Prisma.LevelCreateNestedOneWithoutUnitsInput
+  lessons?: Prisma.LessonCreateNestedManyWithoutUnitInput
 }
 
 export type UnitUncheckedCreateInput = {
@@ -306,6 +310,7 @@ export type UnitUncheckedCreateInput = {
   order: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  lessons?: Prisma.LessonUncheckedCreateNestedManyWithoutUnitInput
 }
 
 export type UnitUpdateInput = {
@@ -316,6 +321,7 @@ export type UnitUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   level?: Prisma.LevelUpdateOneRequiredWithoutUnitsNestedInput
+  lessons?: Prisma.LessonUpdateManyWithoutUnitNestedInput
 }
 
 export type UnitUncheckedUpdateInput = {
@@ -326,6 +332,7 @@ export type UnitUncheckedUpdateInput = {
   order?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lessons?: Prisma.LessonUncheckedUpdateManyWithoutUnitNestedInput
 }
 
 export type UnitCreateManyInput = {
@@ -405,6 +412,11 @@ export type UnitSumOrderByAggregateInput = {
   order?: Prisma.SortOrder
 }
 
+export type UnitScalarRelationFilter = {
+  is?: Prisma.UnitWhereInput
+  isNot?: Prisma.UnitWhereInput
+}
+
 export type UnitCreateNestedManyWithoutLevelInput = {
   create?: Prisma.XOR<Prisma.UnitCreateWithoutLevelInput, Prisma.UnitUncheckedCreateWithoutLevelInput> | Prisma.UnitCreateWithoutLevelInput[] | Prisma.UnitUncheckedCreateWithoutLevelInput[]
   connectOrCreate?: Prisma.UnitCreateOrConnectWithoutLevelInput | Prisma.UnitCreateOrConnectWithoutLevelInput[]
@@ -447,6 +459,20 @@ export type UnitUncheckedUpdateManyWithoutLevelNestedInput = {
   deleteMany?: Prisma.UnitScalarWhereInput | Prisma.UnitScalarWhereInput[]
 }
 
+export type UnitCreateNestedOneWithoutLessonsInput = {
+  create?: Prisma.XOR<Prisma.UnitCreateWithoutLessonsInput, Prisma.UnitUncheckedCreateWithoutLessonsInput>
+  connectOrCreate?: Prisma.UnitCreateOrConnectWithoutLessonsInput
+  connect?: Prisma.UnitWhereUniqueInput
+}
+
+export type UnitUpdateOneRequiredWithoutLessonsNestedInput = {
+  create?: Prisma.XOR<Prisma.UnitCreateWithoutLessonsInput, Prisma.UnitUncheckedCreateWithoutLessonsInput>
+  connectOrCreate?: Prisma.UnitCreateOrConnectWithoutLessonsInput
+  upsert?: Prisma.UnitUpsertWithoutLessonsInput
+  connect?: Prisma.UnitWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UnitUpdateToOneWithWhereWithoutLessonsInput, Prisma.UnitUpdateWithoutLessonsInput>, Prisma.UnitUncheckedUpdateWithoutLessonsInput>
+}
+
 export type UnitCreateWithoutLevelInput = {
   id?: string
   name: string
@@ -454,6 +480,7 @@ export type UnitCreateWithoutLevelInput = {
   order: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  lessons?: Prisma.LessonCreateNestedManyWithoutUnitInput
 }
 
 export type UnitUncheckedCreateWithoutLevelInput = {
@@ -463,6 +490,7 @@ export type UnitUncheckedCreateWithoutLevelInput = {
   order: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  lessons?: Prisma.LessonUncheckedCreateNestedManyWithoutUnitInput
 }
 
 export type UnitCreateOrConnectWithoutLevelInput = {
@@ -504,6 +532,62 @@ export type UnitScalarWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"Unit"> | Date | string
 }
 
+export type UnitCreateWithoutLessonsInput = {
+  id?: string
+  name: string
+  description?: string | null
+  order: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  level: Prisma.LevelCreateNestedOneWithoutUnitsInput
+}
+
+export type UnitUncheckedCreateWithoutLessonsInput = {
+  id?: string
+  levelId: string
+  name: string
+  description?: string | null
+  order: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type UnitCreateOrConnectWithoutLessonsInput = {
+  where: Prisma.UnitWhereUniqueInput
+  create: Prisma.XOR<Prisma.UnitCreateWithoutLessonsInput, Prisma.UnitUncheckedCreateWithoutLessonsInput>
+}
+
+export type UnitUpsertWithoutLessonsInput = {
+  update: Prisma.XOR<Prisma.UnitUpdateWithoutLessonsInput, Prisma.UnitUncheckedUpdateWithoutLessonsInput>
+  create: Prisma.XOR<Prisma.UnitCreateWithoutLessonsInput, Prisma.UnitUncheckedCreateWithoutLessonsInput>
+  where?: Prisma.UnitWhereInput
+}
+
+export type UnitUpdateToOneWithWhereWithoutLessonsInput = {
+  where?: Prisma.UnitWhereInput
+  data: Prisma.XOR<Prisma.UnitUpdateWithoutLessonsInput, Prisma.UnitUncheckedUpdateWithoutLessonsInput>
+}
+
+export type UnitUpdateWithoutLessonsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  order?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  level?: Prisma.LevelUpdateOneRequiredWithoutUnitsNestedInput
+}
+
+export type UnitUncheckedUpdateWithoutLessonsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  levelId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  order?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
 export type UnitCreateManyLevelInput = {
   id?: string
   name: string
@@ -520,6 +604,7 @@ export type UnitUpdateWithoutLevelInput = {
   order?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lessons?: Prisma.LessonUpdateManyWithoutUnitNestedInput
 }
 
 export type UnitUncheckedUpdateWithoutLevelInput = {
@@ -529,6 +614,7 @@ export type UnitUncheckedUpdateWithoutLevelInput = {
   order?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  lessons?: Prisma.LessonUncheckedUpdateManyWithoutUnitNestedInput
 }
 
 export type UnitUncheckedUpdateManyWithoutLevelInput = {
@@ -541,6 +627,35 @@ export type UnitUncheckedUpdateManyWithoutLevelInput = {
 }
 
 
+/**
+ * Count Type UnitCountOutputType
+ */
+
+export type UnitCountOutputType = {
+  lessons: number
+}
+
+export type UnitCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  lessons?: boolean | UnitCountOutputTypeCountLessonsArgs
+}
+
+/**
+ * UnitCountOutputType without action
+ */
+export type UnitCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the UnitCountOutputType
+   */
+  select?: Prisma.UnitCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * UnitCountOutputType without action
+ */
+export type UnitCountOutputTypeCountLessonsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.LessonWhereInput
+}
+
 
 export type UnitSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -551,6 +666,8 @@ export type UnitSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   createdAt?: boolean
   updatedAt?: boolean
   level?: boolean | Prisma.LevelDefaultArgs<ExtArgs>
+  lessons?: boolean | Prisma.Unit$lessonsArgs<ExtArgs>
+  _count?: boolean | Prisma.UnitCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["unit"]>
 
 export type UnitSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -588,6 +705,8 @@ export type UnitSelectScalar = {
 export type UnitOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "levelId" | "name" | "description" | "order" | "createdAt" | "updatedAt", ExtArgs["result"]["unit"]>
 export type UnitInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   level?: boolean | Prisma.LevelDefaultArgs<ExtArgs>
+  lessons?: boolean | Prisma.Unit$lessonsArgs<ExtArgs>
+  _count?: boolean | Prisma.UnitCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UnitIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   level?: boolean | Prisma.LevelDefaultArgs<ExtArgs>
@@ -600,6 +719,7 @@ export type $UnitPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   name: "Unit"
   objects: {
     level: Prisma.$LevelPayload<ExtArgs>
+    lessons: Prisma.$LessonPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1004,6 +1124,7 @@ readonly fields: UnitFieldRefs;
 export interface Prisma__UnitClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   level<T extends Prisma.LevelDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.LevelDefaultArgs<ExtArgs>>): Prisma.Prisma__LevelClient<runtime.Types.Result.GetResult<Prisma.$LevelPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  lessons<T extends Prisma.Unit$lessonsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Unit$lessonsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$LessonPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1438,6 +1559,30 @@ export type UnitDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Internal
    * Limit how many Units to delete.
    */
   limit?: number
+}
+
+/**
+ * Unit.lessons
+ */
+export type Unit$lessonsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Lesson
+   */
+  select?: Prisma.LessonSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Lesson
+   */
+  omit?: Prisma.LessonOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.LessonInclude<ExtArgs> | null
+  where?: Prisma.LessonWhereInput
+  orderBy?: Prisma.LessonOrderByWithRelationInput | Prisma.LessonOrderByWithRelationInput[]
+  cursor?: Prisma.LessonWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.LessonScalarFieldEnum | Prisma.LessonScalarFieldEnum[]
 }
 
 /**

@@ -53,4 +53,17 @@ model Unit {
   updatedAt   DateTime @updatedAt
 
   level       Level    @relation(fields: [levelId], references: [id])
+  lessons     Lesson[]
+}
+
+model Lesson {
+  id          String   @id @default(uuid())
+  unitId      String
+  name        String
+  description String?
+  order       Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  unit        Unit     @relation(fields: [unitId], references: [id])
 }

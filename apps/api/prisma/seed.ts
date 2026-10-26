@@ -60,19 +60,37 @@ async function main() {
     });
   }
 
-  const existingUnit = await prisma.unit.findFirst({
+  let unit = await prisma.unit.findFirst({
     where: {
       levelId: level.id,
       name: 'Greetings',
     },
   });
 
-  if (!existingUnit) {
-    await prisma.unit.create({
+  if (!unit) {
+    unit = await prisma.unit.create({
       data: {
         levelId: level.id,
         name: 'Greetings',
         description: 'Basic greetings and introductory expressions in Ewondo.',
+        order: 1,
+      },
+    });
+  }
+
+  const existingLesson = await prisma.lesson.findFirst({
+    where: {
+      unitId: unit.id,
+      name: 'Basic Greetings',
+    },
+  });
+
+  if (!existingLesson) {
+    await prisma.lesson.create({
+      data: {
+        unitId: unit.id,
+        name: 'Basic Greetings',
+        description: 'Learn common greetings and introductory expressions.',
         order: 1,
       },
     });
