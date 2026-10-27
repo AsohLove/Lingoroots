@@ -15,4 +15,34 @@ export class LessonService {
       },
     });
   }
+
+  async findContentByLesson(lessonId: string) {
+    return this.prisma.lesson.findUnique({
+      where: {
+        id: lessonId,
+      },
+      include: {
+        vocabularyItems: {
+          orderBy: {
+            order: 'asc',
+          },
+        },
+        expressions: {
+          orderBy: {
+            order: 'asc',
+          },
+        },
+        exampleSentences: {
+          orderBy: {
+            order: 'asc',
+          },
+        },
+        audio: {
+          orderBy: {
+            order: "asc",
+          },
+        },
+      },
+    });
+  }
 }

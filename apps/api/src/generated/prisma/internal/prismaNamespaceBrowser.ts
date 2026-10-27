@@ -55,7 +55,11 @@ export const ModelName = {
   Course: 'Course',
   Level: 'Level',
   Unit: 'Unit',
-  Lesson: 'Lesson'
+  Lesson: 'Lesson',
+  VocabularyItem: 'VocabularyItem',
+  Expression: 'Expression',
+  ExampleSentence: 'ExampleSentence',
+  Audio: 'Audio'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -135,6 +139,61 @@ export const LessonScalarFieldEnum = {
 } as const
 
 export type LessonScalarFieldEnum = (typeof LessonScalarFieldEnum)[keyof typeof LessonScalarFieldEnum]
+
+
+export const VocabularyItemScalarFieldEnum = {
+  id: 'id',
+  lessonId: 'lessonId',
+  term: 'term',
+  meaning: 'meaning',
+  explanation: 'explanation',
+  order: 'order',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type VocabularyItemScalarFieldEnum = (typeof VocabularyItemScalarFieldEnum)[keyof typeof VocabularyItemScalarFieldEnum]
+
+
+export const ExpressionScalarFieldEnum = {
+  id: 'id',
+  lessonId: 'lessonId',
+  text: 'text',
+  translation: 'translation',
+  explanation: 'explanation',
+  order: 'order',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ExpressionScalarFieldEnum = (typeof ExpressionScalarFieldEnum)[keyof typeof ExpressionScalarFieldEnum]
+
+
+export const ExampleSentenceScalarFieldEnum = {
+  id: 'id',
+  lessonId: 'lessonId',
+  text: 'text',
+  translation: 'translation',
+  explanation: 'explanation',
+  order: 'order',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ExampleSentenceScalarFieldEnum = (typeof ExampleSentenceScalarFieldEnum)[keyof typeof ExampleSentenceScalarFieldEnum]
+
+
+export const AudioScalarFieldEnum = {
+  id: 'id',
+  lessonId: 'lessonId',
+  title: 'title',
+  url: 'url',
+  order: 'order',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AudioScalarFieldEnum = (typeof AudioScalarFieldEnum)[keyof typeof AudioScalarFieldEnum]
 
 
 export const SortOrder = {

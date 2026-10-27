@@ -65,5 +65,60 @@ model Lesson {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  unit        Unit     @relation(fields: [unitId], references: [id])
+  unit              Unit     @relation(fields: [unitId], references: [id])
+  vocabularyItems   VocabularyItem[]
+  expressions       Expression[]
+  exampleSentences  ExampleSentence[]
+  audio             Audio[]
+}
+
+model VocabularyItem {
+  id          String   @id @default(uuid())
+  lessonId    String
+  term        String
+  meaning     String
+  explanation String?
+  order       Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  lesson      Lesson   @relation(fields: [lessonId], references: [id])
+}
+
+model Expression {
+  id          String   @id @default(uuid())
+  lessonId    String
+  text        String
+  translation String
+  explanation String?
+  order       Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  lesson      Lesson   @relation(fields: [lessonId], references: [id])
+}
+
+model ExampleSentence {
+  id          String   @id @default(uuid())
+  lessonId    String
+  text        String
+  translation String
+  explanation String?
+  order       Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  lesson      Lesson   @relation(fields: [lessonId], references: [id])
+}
+
+model Audio {
+  id        String   @id @default(uuid())
+  lessonId  String
+  title     String
+  url       String
+  order     Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  lesson Lesson @relation(fields: [lessonId], references: [id])
 }

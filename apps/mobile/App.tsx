@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View, ScrollView } from "react-native";
 
 import { API_BASE_URL } from "./src/config/api";
 import { getLanguages, type Language } from "./src/api/languages";
 import { getCoursesByLanguage, type Course } from "./src/api/courses";
 import { getUnitsByLevel, type Unit } from "./src/api/units";
 import { getLessonsByUnit, type Lesson } from "./src/api/lessons";
+import { getLessonContent, type LessonContent } from "./src/api/lessonContent";
+
+import LessonScreen from "./src/screens/LessonScreen";
 
 export default function App() {
   const [apiStatus, setApiStatus] = useState("Checking...");
@@ -22,6 +25,12 @@ export default function App() {
 
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [lessonStatus, setLessonStatus] = useState("Waiting...");
+
+  const [lessonContent, setLessonContent] = useState<LessonContent | null>(
+    null,
+  );
+
+  const [lessonContentStatus, setLessonContentStatus] = useState("Waiting...");
 
   useEffect(() => {
     async function loadData() {
@@ -97,13 +106,25 @@ export default function App() {
 
         if (lessonsData.length === 0) {
           setLessonStatus("No lesson available");
+          return;
         }
+
+        const firstLesson = lessonsData[0];
+
+        const lessonContentData = await getLessonContent(
+          firstUnit.id,
+          firstLesson.id,
+        );
+
+        setLessonContent(lessonContentData);
+        setLessonContentStatus("Loaded ✓");
       } catch {
         setApiStatus("Connection failed");
         setLanguageStatus("Failed to load");
         setCourseStatus("Failed to load");
         setUnitStatus("Failed to load");
         setLessonStatus("Failed to load");
+        setLessonContentStatus("Failed to load");
       }
     }
 
@@ -111,7 +132,10 @@ export default function App() {
   }, []);
 
   return (
-    <View style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.contentContainer}
+    >
       <Text style={styles.title}>LingoRoots</Text>
 
       <Text style={styles.subtitle}>
@@ -154,9 +178,7 @@ export default function App() {
             <Text style={styles.courseName}>{course.name}</Text>
 
             {course.description && (
-              <Text style={styles.courseDescription}>
-                {course.description}
-              </Text>
+              <Text style={styles.courseDescription}>{course.description}</Text>
             )}
 
             {/* Levels */}
@@ -215,20 +237,23 @@ export default function App() {
                 </View>
               ))}
             </View>
+            {lessonContent && <LessonScreen lessonContent={lessonContent} />}
           </View>
         ))}
       </View>
 
       <StatusBar style="auto" />
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
+  },
+  contentContainer: {
     padding: 24,
+    paddingBottom: 40,
   },
 
   title: {
@@ -379,6 +404,46 @@ const styles = StyleSheet.create({
   },
 
   lessonDescription: {
+    fontSize: 14,
+    marginTop: 4,
+  },
+  lessonContentSection: {
+    marginTop: 16,
+    padding: 20,
+    borderWidth: 1,
+    borderRadius: 12,
+  },
+
+  lessonContentTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    marginBottom: 12,
+  },
+
+  contentHeading: {
+    fontSize: 18,
+    fontWeight: "700",
+    marginTop: 20,
+    marginBottom: 8,
+  },
+
+  contentItem: {
+    marginTop: 12,
+    paddingLeft: 12,
+    borderLeftWidth: 2,
+  },
+
+  contentTerm: {
+    fontSize: 17,
+    fontWeight: "600",
+  },
+
+  contentTranslation: {
+    fontSize: 16,
+    marginTop: 4,
+  },
+
+  contentExplanation: {
     fontSize: 14,
     marginTop: 4,
   },

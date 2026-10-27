@@ -66,3 +66,23 @@ export type Unit = Prisma.UnitModel
  * 
  */
 export type Lesson = Prisma.LessonModel
+/**
+ * Model VocabularyItem
+ * 
+ */
+export type VocabularyItem = Prisma.VocabularyItemModel
+/**
+ * Model Expression
+ * 
+ */
+export type Expression = Prisma.ExpressionModel
+/**
+ * Model ExampleSentence
+ * 
+ */
+export type ExampleSentence = Prisma.ExampleSentenceModel
+/**
+ * Model Audio
+ * 
+ */
+export type Audio = Prisma.AudioModel

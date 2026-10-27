@@ -233,6 +233,10 @@ export type LessonWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"Lesson"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Lesson"> | Date | string
   unit?: Prisma.XOR<Prisma.UnitScalarRelationFilter, Prisma.UnitWhereInput>
+  vocabularyItems?: Prisma.VocabularyItemListRelationFilter
+  expressions?: Prisma.ExpressionListRelationFilter
+  exampleSentences?: Prisma.ExampleSentenceListRelationFilter
+  audio?: Prisma.AudioListRelationFilter
 }
 
 export type LessonOrderByWithRelationInput = {
@@ -244,6 +248,10 @@ export type LessonOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   unit?: Prisma.UnitOrderByWithRelationInput
+  vocabularyItems?: Prisma.VocabularyItemOrderByRelationAggregateInput
+  expressions?: Prisma.ExpressionOrderByRelationAggregateInput
+  exampleSentences?: Prisma.ExampleSentenceOrderByRelationAggregateInput
+  audio?: Prisma.AudioOrderByRelationAggregateInput
 }
 
 export type LessonWhereUniqueInput = Prisma.AtLeast<{
@@ -258,6 +266,10 @@ export type LessonWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"Lesson"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Lesson"> | Date | string
   unit?: Prisma.XOR<Prisma.UnitScalarRelationFilter, Prisma.UnitWhereInput>
+  vocabularyItems?: Prisma.VocabularyItemListRelationFilter
+  expressions?: Prisma.ExpressionListRelationFilter
+  exampleSentences?: Prisma.ExampleSentenceListRelationFilter
+  audio?: Prisma.AudioListRelationFilter
 }, "id">
 
 export type LessonOrderByWithAggregationInput = {
@@ -296,6 +308,10 @@ export type LessonCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   unit: Prisma.UnitCreateNestedOneWithoutLessonsInput
+  vocabularyItems?: Prisma.VocabularyItemCreateNestedManyWithoutLessonInput
+  expressions?: Prisma.ExpressionCreateNestedManyWithoutLessonInput
+  exampleSentences?: Prisma.ExampleSentenceCreateNestedManyWithoutLessonInput
+  audio?: Prisma.AudioCreateNestedManyWithoutLessonInput
 }
 
 export type LessonUncheckedCreateInput = {
@@ -306,6 +322,10 @@ export type LessonUncheckedCreateInput = {
   order: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  vocabularyItems?: Prisma.VocabularyItemUncheckedCreateNestedManyWithoutLessonInput
+  expressions?: Prisma.ExpressionUncheckedCreateNestedManyWithoutLessonInput
+  exampleSentences?: Prisma.ExampleSentenceUncheckedCreateNestedManyWithoutLessonInput
+  audio?: Prisma.AudioUncheckedCreateNestedManyWithoutLessonInput
 }
 
 export type LessonUpdateInput = {
@@ -316,6 +336,10 @@ export type LessonUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   unit?: Prisma.UnitUpdateOneRequiredWithoutLessonsNestedInput
+  vocabularyItems?: Prisma.VocabularyItemUpdateManyWithoutLessonNestedInput
+  expressions?: Prisma.ExpressionUpdateManyWithoutLessonNestedInput
+  exampleSentences?: Prisma.ExampleSentenceUpdateManyWithoutLessonNestedInput
+  audio?: Prisma.AudioUpdateManyWithoutLessonNestedInput
 }
 
 export type LessonUncheckedUpdateInput = {
@@ -326,6 +350,10 @@ export type LessonUncheckedUpdateInput = {
   order?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  vocabularyItems?: Prisma.VocabularyItemUncheckedUpdateManyWithoutLessonNestedInput
+  expressions?: Prisma.ExpressionUncheckedUpdateManyWithoutLessonNestedInput
+  exampleSentences?: Prisma.ExampleSentenceUncheckedUpdateManyWithoutLessonNestedInput
+  audio?: Prisma.AudioUncheckedUpdateManyWithoutLessonNestedInput
 }
 
 export type LessonCreateManyInput = {
@@ -405,6 +433,11 @@ export type LessonSumOrderByAggregateInput = {
   order?: Prisma.SortOrder
 }
 
+export type LessonScalarRelationFilter = {
+  is?: Prisma.LessonWhereInput
+  isNot?: Prisma.LessonWhereInput
+}
+
 export type LessonCreateNestedManyWithoutUnitInput = {
   create?: Prisma.XOR<Prisma.LessonCreateWithoutUnitInput, Prisma.LessonUncheckedCreateWithoutUnitInput> | Prisma.LessonCreateWithoutUnitInput[] | Prisma.LessonUncheckedCreateWithoutUnitInput[]
   connectOrCreate?: Prisma.LessonCreateOrConnectWithoutUnitInput | Prisma.LessonCreateOrConnectWithoutUnitInput[]
@@ -447,6 +480,62 @@ export type LessonUncheckedUpdateManyWithoutUnitNestedInput = {
   deleteMany?: Prisma.LessonScalarWhereInput | Prisma.LessonScalarWhereInput[]
 }
 
+export type LessonCreateNestedOneWithoutVocabularyItemsInput = {
+  create?: Prisma.XOR<Prisma.LessonCreateWithoutVocabularyItemsInput, Prisma.LessonUncheckedCreateWithoutVocabularyItemsInput>
+  connectOrCreate?: Prisma.LessonCreateOrConnectWithoutVocabularyItemsInput
+  connect?: Prisma.LessonWhereUniqueInput
+}
+
+export type LessonUpdateOneRequiredWithoutVocabularyItemsNestedInput = {
+  create?: Prisma.XOR<Prisma.LessonCreateWithoutVocabularyItemsInput, Prisma.LessonUncheckedCreateWithoutVocabularyItemsInput>
+  connectOrCreate?: Prisma.LessonCreateOrConnectWithoutVocabularyItemsInput
+  upsert?: Prisma.LessonUpsertWithoutVocabularyItemsInput
+  connect?: Prisma.LessonWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.LessonUpdateToOneWithWhereWithoutVocabularyItemsInput, Prisma.LessonUpdateWithoutVocabularyItemsInput>, Prisma.LessonUncheckedUpdateWithoutVocabularyItemsInput>
+}
+
+export type LessonCreateNestedOneWithoutExpressionsInput = {
+  create?: Prisma.XOR<Prisma.LessonCreateWithoutExpressionsInput, Prisma.LessonUncheckedCreateWithoutExpressionsInput>
+  connectOrCreate?: Prisma.LessonCreateOrConnectWithoutExpressionsInput
+  connect?: Prisma.LessonWhereUniqueInput
+}
+
+export type LessonUpdateOneRequiredWithoutExpressionsNestedInput = {
+  create?: Prisma.XOR<Prisma.LessonCreateWithoutExpressionsInput, Prisma.LessonUncheckedCreateWithoutExpressionsInput>
+  connectOrCreate?: Prisma.LessonCreateOrConnectWithoutExpressionsInput
+  upsert?: Prisma.LessonUpsertWithoutExpressionsInput
+  connect?: Prisma.LessonWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.LessonUpdateToOneWithWhereWithoutExpressionsInput, Prisma.LessonUpdateWithoutExpressionsInput>, Prisma.LessonUncheckedUpdateWithoutExpressionsInput>
+}
+
+export type LessonCreateNestedOneWithoutExampleSentencesInput = {
+  create?: Prisma.XOR<Prisma.LessonCreateWithoutExampleSentencesInput, Prisma.LessonUncheckedCreateWithoutExampleSentencesInput>
+  connectOrCreate?: Prisma.LessonCreateOrConnectWithoutExampleSentencesInput
+  connect?: Prisma.LessonWhereUniqueInput
+}
+
+export type LessonUpdateOneRequiredWithoutExampleSentencesNestedInput = {
+  create?: Prisma.XOR<Prisma.LessonCreateWithoutExampleSentencesInput, Prisma.LessonUncheckedCreateWithoutExampleSentencesInput>
+  connectOrCreate?: Prisma.LessonCreateOrConnectWithoutExampleSentencesInput
+  upsert?: Prisma.LessonUpsertWithoutExampleSentencesInput
+  connect?: Prisma.LessonWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.LessonUpdateToOneWithWhereWithoutExampleSentencesInput, Prisma.LessonUpdateWithoutExampleSentencesInput>, Prisma.LessonUncheckedUpdateWithoutExampleSentencesInput>
+}
+
+export type LessonCreateNestedOneWithoutAudioInput = {
+  create?: Prisma.XOR<Prisma.LessonCreateWithoutAudioInput, Prisma.LessonUncheckedCreateWithoutAudioInput>
+  connectOrCreate?: Prisma.LessonCreateOrConnectWithoutAudioInput
+  connect?: Prisma.LessonWhereUniqueInput
+}
+
+export type LessonUpdateOneRequiredWithoutAudioNestedInput = {
+  create?: Prisma.XOR<Prisma.LessonCreateWithoutAudioInput, Prisma.LessonUncheckedCreateWithoutAudioInput>
+  connectOrCreate?: Prisma.LessonCreateOrConnectWithoutAudioInput
+  upsert?: Prisma.LessonUpsertWithoutAudioInput
+  connect?: Prisma.LessonWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.LessonUpdateToOneWithWhereWithoutAudioInput, Prisma.LessonUpdateWithoutAudioInput>, Prisma.LessonUncheckedUpdateWithoutAudioInput>
+}
+
 export type LessonCreateWithoutUnitInput = {
   id?: string
   name: string
@@ -454,6 +543,10 @@ export type LessonCreateWithoutUnitInput = {
   order: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  vocabularyItems?: Prisma.VocabularyItemCreateNestedManyWithoutLessonInput
+  expressions?: Prisma.ExpressionCreateNestedManyWithoutLessonInput
+  exampleSentences?: Prisma.ExampleSentenceCreateNestedManyWithoutLessonInput
+  audio?: Prisma.AudioCreateNestedManyWithoutLessonInput
 }
 
 export type LessonUncheckedCreateWithoutUnitInput = {
@@ -463,6 +556,10 @@ export type LessonUncheckedCreateWithoutUnitInput = {
   order: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  vocabularyItems?: Prisma.VocabularyItemUncheckedCreateNestedManyWithoutLessonInput
+  expressions?: Prisma.ExpressionUncheckedCreateNestedManyWithoutLessonInput
+  exampleSentences?: Prisma.ExampleSentenceUncheckedCreateNestedManyWithoutLessonInput
+  audio?: Prisma.AudioUncheckedCreateNestedManyWithoutLessonInput
 }
 
 export type LessonCreateOrConnectWithoutUnitInput = {
@@ -504,6 +601,278 @@ export type LessonScalarWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"Lesson"> | Date | string
 }
 
+export type LessonCreateWithoutVocabularyItemsInput = {
+  id?: string
+  name: string
+  description?: string | null
+  order: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  unit: Prisma.UnitCreateNestedOneWithoutLessonsInput
+  expressions?: Prisma.ExpressionCreateNestedManyWithoutLessonInput
+  exampleSentences?: Prisma.ExampleSentenceCreateNestedManyWithoutLessonInput
+  audio?: Prisma.AudioCreateNestedManyWithoutLessonInput
+}
+
+export type LessonUncheckedCreateWithoutVocabularyItemsInput = {
+  id?: string
+  unitId: string
+  name: string
+  description?: string | null
+  order: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  expressions?: Prisma.ExpressionUncheckedCreateNestedManyWithoutLessonInput
+  exampleSentences?: Prisma.ExampleSentenceUncheckedCreateNestedManyWithoutLessonInput
+  audio?: Prisma.AudioUncheckedCreateNestedManyWithoutLessonInput
+}
+
+export type LessonCreateOrConnectWithoutVocabularyItemsInput = {
+  where: Prisma.LessonWhereUniqueInput
+  create: Prisma.XOR<Prisma.LessonCreateWithoutVocabularyItemsInput, Prisma.LessonUncheckedCreateWithoutVocabularyItemsInput>
+}
+
+export type LessonUpsertWithoutVocabularyItemsInput = {
+  update: Prisma.XOR<Prisma.LessonUpdateWithoutVocabularyItemsInput, Prisma.LessonUncheckedUpdateWithoutVocabularyItemsInput>
+  create: Prisma.XOR<Prisma.LessonCreateWithoutVocabularyItemsInput, Prisma.LessonUncheckedCreateWithoutVocabularyItemsInput>
+  where?: Prisma.LessonWhereInput
+}
+
+export type LessonUpdateToOneWithWhereWithoutVocabularyItemsInput = {
+  where?: Prisma.LessonWhereInput
+  data: Prisma.XOR<Prisma.LessonUpdateWithoutVocabularyItemsInput, Prisma.LessonUncheckedUpdateWithoutVocabularyItemsInput>
+}
+
+export type LessonUpdateWithoutVocabularyItemsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  order?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  unit?: Prisma.UnitUpdateOneRequiredWithoutLessonsNestedInput
+  expressions?: Prisma.ExpressionUpdateManyWithoutLessonNestedInput
+  exampleSentences?: Prisma.ExampleSentenceUpdateManyWithoutLessonNestedInput
+  audio?: Prisma.AudioUpdateManyWithoutLessonNestedInput
+}
+
+export type LessonUncheckedUpdateWithoutVocabularyItemsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  unitId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  order?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  expressions?: Prisma.ExpressionUncheckedUpdateManyWithoutLessonNestedInput
+  exampleSentences?: Prisma.ExampleSentenceUncheckedUpdateManyWithoutLessonNestedInput
+  audio?: Prisma.AudioUncheckedUpdateManyWithoutLessonNestedInput
+}
+
+export type LessonCreateWithoutExpressionsInput = {
+  id?: string
+  name: string
+  description?: string | null
+  order: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  unit: Prisma.UnitCreateNestedOneWithoutLessonsInput
+  vocabularyItems?: Prisma.VocabularyItemCreateNestedManyWithoutLessonInput
+  exampleSentences?: Prisma.ExampleSentenceCreateNestedManyWithoutLessonInput
+  audio?: Prisma.AudioCreateNestedManyWithoutLessonInput
+}
+
+export type LessonUncheckedCreateWithoutExpressionsInput = {
+  id?: string
+  unitId: string
+  name: string
+  description?: string | null
+  order: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  vocabularyItems?: Prisma.VocabularyItemUncheckedCreateNestedManyWithoutLessonInput
+  exampleSentences?: Prisma.ExampleSentenceUncheckedCreateNestedManyWithoutLessonInput
+  audio?: Prisma.AudioUncheckedCreateNestedManyWithoutLessonInput
+}
+
+export type LessonCreateOrConnectWithoutExpressionsInput = {
+  where: Prisma.LessonWhereUniqueInput
+  create: Prisma.XOR<Prisma.LessonCreateWithoutExpressionsInput, Prisma.LessonUncheckedCreateWithoutExpressionsInput>
+}
+
+export type LessonUpsertWithoutExpressionsInput = {
+  update: Prisma.XOR<Prisma.LessonUpdateWithoutExpressionsInput, Prisma.LessonUncheckedUpdateWithoutExpressionsInput>
+  create: Prisma.XOR<Prisma.LessonCreateWithoutExpressionsInput, Prisma.LessonUncheckedCreateWithoutExpressionsInput>
+  where?: Prisma.LessonWhereInput
+}
+
+export type LessonUpdateToOneWithWhereWithoutExpressionsInput = {
+  where?: Prisma.LessonWhereInput
+  data: Prisma.XOR<Prisma.LessonUpdateWithoutExpressionsInput, Prisma.LessonUncheckedUpdateWithoutExpressionsInput>
+}
+
+export type LessonUpdateWithoutExpressionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  order?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  unit?: Prisma.UnitUpdateOneRequiredWithoutLessonsNestedInput
+  vocabularyItems?: Prisma.VocabularyItemUpdateManyWithoutLessonNestedInput
+  exampleSentences?: Prisma.ExampleSentenceUpdateManyWithoutLessonNestedInput
+  audio?: Prisma.AudioUpdateManyWithoutLessonNestedInput
+}
+
+export type LessonUncheckedUpdateWithoutExpressionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  unitId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  order?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  vocabularyItems?: Prisma.VocabularyItemUncheckedUpdateManyWithoutLessonNestedInput
+  exampleSentences?: Prisma.ExampleSentenceUncheckedUpdateManyWithoutLessonNestedInput
+  audio?: Prisma.AudioUncheckedUpdateManyWithoutLessonNestedInput
+}
+
+export type LessonCreateWithoutExampleSentencesInput = {
+  id?: string
+  name: string
+  description?: string | null
+  order: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  unit: Prisma.UnitCreateNestedOneWithoutLessonsInput
+  vocabularyItems?: Prisma.VocabularyItemCreateNestedManyWithoutLessonInput
+  expressions?: Prisma.ExpressionCreateNestedManyWithoutLessonInput
+  audio?: Prisma.AudioCreateNestedManyWithoutLessonInput
+}
+
+export type LessonUncheckedCreateWithoutExampleSentencesInput = {
+  id?: string
+  unitId: string
+  name: string
+  description?: string | null
+  order: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  vocabularyItems?: Prisma.VocabularyItemUncheckedCreateNestedManyWithoutLessonInput
+  expressions?: Prisma.ExpressionUncheckedCreateNestedManyWithoutLessonInput
+  audio?: Prisma.AudioUncheckedCreateNestedManyWithoutLessonInput
+}
+
+export type LessonCreateOrConnectWithoutExampleSentencesInput = {
+  where: Prisma.LessonWhereUniqueInput
+  create: Prisma.XOR<Prisma.LessonCreateWithoutExampleSentencesInput, Prisma.LessonUncheckedCreateWithoutExampleSentencesInput>
+}
+
+export type LessonUpsertWithoutExampleSentencesInput = {
+  update: Prisma.XOR<Prisma.LessonUpdateWithoutExampleSentencesInput, Prisma.LessonUncheckedUpdateWithoutExampleSentencesInput>
+  create: Prisma.XOR<Prisma.LessonCreateWithoutExampleSentencesInput, Prisma.LessonUncheckedCreateWithoutExampleSentencesInput>
+  where?: Prisma.LessonWhereInput
+}
+
+export type LessonUpdateToOneWithWhereWithoutExampleSentencesInput = {
+  where?: Prisma.LessonWhereInput
+  data: Prisma.XOR<Prisma.LessonUpdateWithoutExampleSentencesInput, Prisma.LessonUncheckedUpdateWithoutExampleSentencesInput>
+}
+
+export type LessonUpdateWithoutExampleSentencesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  order?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  unit?: Prisma.UnitUpdateOneRequiredWithoutLessonsNestedInput
+  vocabularyItems?: Prisma.VocabularyItemUpdateManyWithoutLessonNestedInput
+  expressions?: Prisma.ExpressionUpdateManyWithoutLessonNestedInput
+  audio?: Prisma.AudioUpdateManyWithoutLessonNestedInput
+}
+
+export type LessonUncheckedUpdateWithoutExampleSentencesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  unitId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  order?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  vocabularyItems?: Prisma.VocabularyItemUncheckedUpdateManyWithoutLessonNestedInput
+  expressions?: Prisma.ExpressionUncheckedUpdateManyWithoutLessonNestedInput
+  audio?: Prisma.AudioUncheckedUpdateManyWithoutLessonNestedInput
+}
+
+export type LessonCreateWithoutAudioInput = {
+  id?: string
+  name: string
+  description?: string | null
+  order: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  unit: Prisma.UnitCreateNestedOneWithoutLessonsInput
+  vocabularyItems?: Prisma.VocabularyItemCreateNestedManyWithoutLessonInput
+  expressions?: Prisma.ExpressionCreateNestedManyWithoutLessonInput
+  exampleSentences?: Prisma.ExampleSentenceCreateNestedManyWithoutLessonInput
+}
+
+export type LessonUncheckedCreateWithoutAudioInput = {
+  id?: string
+  unitId: string
+  name: string
+  description?: string | null
+  order: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  vocabularyItems?: Prisma.VocabularyItemUncheckedCreateNestedManyWithoutLessonInput
+  expressions?: Prisma.ExpressionUncheckedCreateNestedManyWithoutLessonInput
+  exampleSentences?: Prisma.ExampleSentenceUncheckedCreateNestedManyWithoutLessonInput
+}
+
+export type LessonCreateOrConnectWithoutAudioInput = {
+  where: Prisma.LessonWhereUniqueInput
+  create: Prisma.XOR<Prisma.LessonCreateWithoutAudioInput, Prisma.LessonUncheckedCreateWithoutAudioInput>
+}
+
+export type LessonUpsertWithoutAudioInput = {
+  update: Prisma.XOR<Prisma.LessonUpdateWithoutAudioInput, Prisma.LessonUncheckedUpdateWithoutAudioInput>
+  create: Prisma.XOR<Prisma.LessonCreateWithoutAudioInput, Prisma.LessonUncheckedCreateWithoutAudioInput>
+  where?: Prisma.LessonWhereInput
+}
+
+export type LessonUpdateToOneWithWhereWithoutAudioInput = {
+  where?: Prisma.LessonWhereInput
+  data: Prisma.XOR<Prisma.LessonUpdateWithoutAudioInput, Prisma.LessonUncheckedUpdateWithoutAudioInput>
+}
+
+export type LessonUpdateWithoutAudioInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  order?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  unit?: Prisma.UnitUpdateOneRequiredWithoutLessonsNestedInput
+  vocabularyItems?: Prisma.VocabularyItemUpdateManyWithoutLessonNestedInput
+  expressions?: Prisma.ExpressionUpdateManyWithoutLessonNestedInput
+  exampleSentences?: Prisma.ExampleSentenceUpdateManyWithoutLessonNestedInput
+}
+
+export type LessonUncheckedUpdateWithoutAudioInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  unitId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  order?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  vocabularyItems?: Prisma.VocabularyItemUncheckedUpdateManyWithoutLessonNestedInput
+  expressions?: Prisma.ExpressionUncheckedUpdateManyWithoutLessonNestedInput
+  exampleSentences?: Prisma.ExampleSentenceUncheckedUpdateManyWithoutLessonNestedInput
+}
+
 export type LessonCreateManyUnitInput = {
   id?: string
   name: string
@@ -520,6 +889,10 @@ export type LessonUpdateWithoutUnitInput = {
   order?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  vocabularyItems?: Prisma.VocabularyItemUpdateManyWithoutLessonNestedInput
+  expressions?: Prisma.ExpressionUpdateManyWithoutLessonNestedInput
+  exampleSentences?: Prisma.ExampleSentenceUpdateManyWithoutLessonNestedInput
+  audio?: Prisma.AudioUpdateManyWithoutLessonNestedInput
 }
 
 export type LessonUncheckedUpdateWithoutUnitInput = {
@@ -529,6 +902,10 @@ export type LessonUncheckedUpdateWithoutUnitInput = {
   order?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  vocabularyItems?: Prisma.VocabularyItemUncheckedUpdateManyWithoutLessonNestedInput
+  expressions?: Prisma.ExpressionUncheckedUpdateManyWithoutLessonNestedInput
+  exampleSentences?: Prisma.ExampleSentenceUncheckedUpdateManyWithoutLessonNestedInput
+  audio?: Prisma.AudioUncheckedUpdateManyWithoutLessonNestedInput
 }
 
 export type LessonUncheckedUpdateManyWithoutUnitInput = {
@@ -541,6 +918,62 @@ export type LessonUncheckedUpdateManyWithoutUnitInput = {
 }
 
 
+/**
+ * Count Type LessonCountOutputType
+ */
+
+export type LessonCountOutputType = {
+  vocabularyItems: number
+  expressions: number
+  exampleSentences: number
+  audio: number
+}
+
+export type LessonCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  vocabularyItems?: boolean | LessonCountOutputTypeCountVocabularyItemsArgs
+  expressions?: boolean | LessonCountOutputTypeCountExpressionsArgs
+  exampleSentences?: boolean | LessonCountOutputTypeCountExampleSentencesArgs
+  audio?: boolean | LessonCountOutputTypeCountAudioArgs
+}
+
+/**
+ * LessonCountOutputType without action
+ */
+export type LessonCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the LessonCountOutputType
+   */
+  select?: Prisma.LessonCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * LessonCountOutputType without action
+ */
+export type LessonCountOutputTypeCountVocabularyItemsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.VocabularyItemWhereInput
+}
+
+/**
+ * LessonCountOutputType without action
+ */
+export type LessonCountOutputTypeCountExpressionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ExpressionWhereInput
+}
+
+/**
+ * LessonCountOutputType without action
+ */
+export type LessonCountOutputTypeCountExampleSentencesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ExampleSentenceWhereInput
+}
+
+/**
+ * LessonCountOutputType without action
+ */
+export type LessonCountOutputTypeCountAudioArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AudioWhereInput
+}
+
 
 export type LessonSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -551,6 +984,11 @@ export type LessonSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   createdAt?: boolean
   updatedAt?: boolean
   unit?: boolean | Prisma.UnitDefaultArgs<ExtArgs>
+  vocabularyItems?: boolean | Prisma.Lesson$vocabularyItemsArgs<ExtArgs>
+  expressions?: boolean | Prisma.Lesson$expressionsArgs<ExtArgs>
+  exampleSentences?: boolean | Prisma.Lesson$exampleSentencesArgs<ExtArgs>
+  audio?: boolean | Prisma.Lesson$audioArgs<ExtArgs>
+  _count?: boolean | Prisma.LessonCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["lesson"]>
 
 export type LessonSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -588,6 +1026,11 @@ export type LessonSelectScalar = {
 export type LessonOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "unitId" | "name" | "description" | "order" | "createdAt" | "updatedAt", ExtArgs["result"]["lesson"]>
 export type LessonInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   unit?: boolean | Prisma.UnitDefaultArgs<ExtArgs>
+  vocabularyItems?: boolean | Prisma.Lesson$vocabularyItemsArgs<ExtArgs>
+  expressions?: boolean | Prisma.Lesson$expressionsArgs<ExtArgs>
+  exampleSentences?: boolean | Prisma.Lesson$exampleSentencesArgs<ExtArgs>
+  audio?: boolean | Prisma.Lesson$audioArgs<ExtArgs>
+  _count?: boolean | Prisma.LessonCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type LessonIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   unit?: boolean | Prisma.UnitDefaultArgs<ExtArgs>
@@ -600,6 +1043,10 @@ export type $LessonPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
   name: "Lesson"
   objects: {
     unit: Prisma.$UnitPayload<ExtArgs>
+    vocabularyItems: Prisma.$VocabularyItemPayload<ExtArgs>[]
+    expressions: Prisma.$ExpressionPayload<ExtArgs>[]
+    exampleSentences: Prisma.$ExampleSentencePayload<ExtArgs>[]
+    audio: Prisma.$AudioPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1004,6 +1451,10 @@ readonly fields: LessonFieldRefs;
 export interface Prisma__LessonClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   unit<T extends Prisma.UnitDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UnitDefaultArgs<ExtArgs>>): Prisma.Prisma__UnitClient<runtime.Types.Result.GetResult<Prisma.$UnitPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  vocabularyItems<T extends Prisma.Lesson$vocabularyItemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Lesson$vocabularyItemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VocabularyItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  expressions<T extends Prisma.Lesson$expressionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Lesson$expressionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ExpressionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  exampleSentences<T extends Prisma.Lesson$exampleSentencesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Lesson$exampleSentencesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ExampleSentencePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  audio<T extends Prisma.Lesson$audioArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Lesson$audioArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AudioPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1438,6 +1889,102 @@ export type LessonDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Intern
    * Limit how many Lessons to delete.
    */
   limit?: number
+}
+
+/**
+ * Lesson.vocabularyItems
+ */
+export type Lesson$vocabularyItemsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the VocabularyItem
+   */
+  select?: Prisma.VocabularyItemSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the VocabularyItem
+   */
+  omit?: Prisma.VocabularyItemOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.VocabularyItemInclude<ExtArgs> | null
+  where?: Prisma.VocabularyItemWhereInput
+  orderBy?: Prisma.VocabularyItemOrderByWithRelationInput | Prisma.VocabularyItemOrderByWithRelationInput[]
+  cursor?: Prisma.VocabularyItemWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.VocabularyItemScalarFieldEnum | Prisma.VocabularyItemScalarFieldEnum[]
+}
+
+/**
+ * Lesson.expressions
+ */
+export type Lesson$expressionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Expression
+   */
+  select?: Prisma.ExpressionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Expression
+   */
+  omit?: Prisma.ExpressionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ExpressionInclude<ExtArgs> | null
+  where?: Prisma.ExpressionWhereInput
+  orderBy?: Prisma.ExpressionOrderByWithRelationInput | Prisma.ExpressionOrderByWithRelationInput[]
+  cursor?: Prisma.ExpressionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ExpressionScalarFieldEnum | Prisma.ExpressionScalarFieldEnum[]
+}
+
+/**
+ * Lesson.exampleSentences
+ */
+export type Lesson$exampleSentencesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ExampleSentence
+   */
+  select?: Prisma.ExampleSentenceSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ExampleSentence
+   */
+  omit?: Prisma.ExampleSentenceOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ExampleSentenceInclude<ExtArgs> | null
+  where?: Prisma.ExampleSentenceWhereInput
+  orderBy?: Prisma.ExampleSentenceOrderByWithRelationInput | Prisma.ExampleSentenceOrderByWithRelationInput[]
+  cursor?: Prisma.ExampleSentenceWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ExampleSentenceScalarFieldEnum | Prisma.ExampleSentenceScalarFieldEnum[]
+}
+
+/**
+ * Lesson.audio
+ */
+export type Lesson$audioArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Audio
+   */
+  select?: Prisma.AudioSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Audio
+   */
+  omit?: Prisma.AudioOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AudioInclude<ExtArgs> | null
+  where?: Prisma.AudioWhereInput
+  orderBy?: Prisma.AudioOrderByWithRelationInput | Prisma.AudioOrderByWithRelationInput[]
+  cursor?: Prisma.AudioWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AudioScalarFieldEnum | Prisma.AudioScalarFieldEnum[]
 }
 
 /**

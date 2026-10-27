@@ -9,4 +9,9 @@ export class LessonController {
   findByUnit(@Param('unitId') unitId: string) {
     return this.lessonService.findByUnit(unitId);
   }
+
+  @Get(':lessonId/content')
+  findContent(@Param('lessonId') lessonId: string) {
+    return this.lessonService.findContentByLesson(lessonId);
+  }
 }

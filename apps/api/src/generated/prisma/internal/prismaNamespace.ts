@@ -401,7 +401,11 @@ export const ModelName = {
   Course: 'Course',
   Level: 'Level',
   Unit: 'Unit',
-  Lesson: 'Lesson'
+  Lesson: 'Lesson',
+  VocabularyItem: 'VocabularyItem',
+  Expression: 'Expression',
+  ExampleSentence: 'ExampleSentence',
+  Audio: 'Audio'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -417,7 +421,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "language" | "course" | "level" | "unit" | "lesson"
+    modelProps: "language" | "course" | "level" | "unit" | "lesson" | "vocabularyItem" | "expression" | "exampleSentence" | "audio"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -791,6 +795,302 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    VocabularyItem: {
+      payload: Prisma.$VocabularyItemPayload<ExtArgs>
+      fields: Prisma.VocabularyItemFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.VocabularyItemFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VocabularyItemPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.VocabularyItemFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VocabularyItemPayload>
+        }
+        findFirst: {
+          args: Prisma.VocabularyItemFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VocabularyItemPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.VocabularyItemFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VocabularyItemPayload>
+        }
+        findMany: {
+          args: Prisma.VocabularyItemFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VocabularyItemPayload>[]
+        }
+        create: {
+          args: Prisma.VocabularyItemCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VocabularyItemPayload>
+        }
+        createMany: {
+          args: Prisma.VocabularyItemCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.VocabularyItemCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VocabularyItemPayload>[]
+        }
+        delete: {
+          args: Prisma.VocabularyItemDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VocabularyItemPayload>
+        }
+        update: {
+          args: Prisma.VocabularyItemUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VocabularyItemPayload>
+        }
+        deleteMany: {
+          args: Prisma.VocabularyItemDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.VocabularyItemUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.VocabularyItemUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VocabularyItemPayload>[]
+        }
+        upsert: {
+          args: Prisma.VocabularyItemUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VocabularyItemPayload>
+        }
+        aggregate: {
+          args: Prisma.VocabularyItemAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateVocabularyItem>
+        }
+        groupBy: {
+          args: Prisma.VocabularyItemGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.VocabularyItemGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.VocabularyItemCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.VocabularyItemCountAggregateOutputType> | number
+        }
+      }
+    }
+    Expression: {
+      payload: Prisma.$ExpressionPayload<ExtArgs>
+      fields: Prisma.ExpressionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ExpressionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpressionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ExpressionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpressionPayload>
+        }
+        findFirst: {
+          args: Prisma.ExpressionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpressionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ExpressionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpressionPayload>
+        }
+        findMany: {
+          args: Prisma.ExpressionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpressionPayload>[]
+        }
+        create: {
+          args: Prisma.ExpressionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpressionPayload>
+        }
+        createMany: {
+          args: Prisma.ExpressionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ExpressionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpressionPayload>[]
+        }
+        delete: {
+          args: Prisma.ExpressionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpressionPayload>
+        }
+        update: {
+          args: Prisma.ExpressionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpressionPayload>
+        }
+        deleteMany: {
+          args: Prisma.ExpressionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ExpressionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ExpressionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpressionPayload>[]
+        }
+        upsert: {
+          args: Prisma.ExpressionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpressionPayload>
+        }
+        aggregate: {
+          args: Prisma.ExpressionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateExpression>
+        }
+        groupBy: {
+          args: Prisma.ExpressionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ExpressionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ExpressionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ExpressionCountAggregateOutputType> | number
+        }
+      }
+    }
+    ExampleSentence: {
+      payload: Prisma.$ExampleSentencePayload<ExtArgs>
+      fields: Prisma.ExampleSentenceFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ExampleSentenceFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExampleSentencePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ExampleSentenceFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExampleSentencePayload>
+        }
+        findFirst: {
+          args: Prisma.ExampleSentenceFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExampleSentencePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ExampleSentenceFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExampleSentencePayload>
+        }
+        findMany: {
+          args: Prisma.ExampleSentenceFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExampleSentencePayload>[]
+        }
+        create: {
+          args: Prisma.ExampleSentenceCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExampleSentencePayload>
+        }
+        createMany: {
+          args: Prisma.ExampleSentenceCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ExampleSentenceCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExampleSentencePayload>[]
+        }
+        delete: {
+          args: Prisma.ExampleSentenceDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExampleSentencePayload>
+        }
+        update: {
+          args: Prisma.ExampleSentenceUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExampleSentencePayload>
+        }
+        deleteMany: {
+          args: Prisma.ExampleSentenceDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ExampleSentenceUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ExampleSentenceUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExampleSentencePayload>[]
+        }
+        upsert: {
+          args: Prisma.ExampleSentenceUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExampleSentencePayload>
+        }
+        aggregate: {
+          args: Prisma.ExampleSentenceAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateExampleSentence>
+        }
+        groupBy: {
+          args: Prisma.ExampleSentenceGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ExampleSentenceGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ExampleSentenceCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ExampleSentenceCountAggregateOutputType> | number
+        }
+      }
+    }
+    Audio: {
+      payload: Prisma.$AudioPayload<ExtArgs>
+      fields: Prisma.AudioFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AudioFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AudioPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AudioFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AudioPayload>
+        }
+        findFirst: {
+          args: Prisma.AudioFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AudioPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AudioFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AudioPayload>
+        }
+        findMany: {
+          args: Prisma.AudioFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AudioPayload>[]
+        }
+        create: {
+          args: Prisma.AudioCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AudioPayload>
+        }
+        createMany: {
+          args: Prisma.AudioCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AudioCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AudioPayload>[]
+        }
+        delete: {
+          args: Prisma.AudioDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AudioPayload>
+        }
+        update: {
+          args: Prisma.AudioUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AudioPayload>
+        }
+        deleteMany: {
+          args: Prisma.AudioDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AudioUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AudioUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AudioPayload>[]
+        }
+        upsert: {
+          args: Prisma.AudioUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AudioPayload>
+        }
+        aggregate: {
+          args: Prisma.AudioAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAudio>
+        }
+        groupBy: {
+          args: Prisma.AudioGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AudioGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AudioCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AudioCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -891,6 +1191,61 @@ export const LessonScalarFieldEnum = {
 } as const
 
 export type LessonScalarFieldEnum = (typeof LessonScalarFieldEnum)[keyof typeof LessonScalarFieldEnum]
+
+
+export const VocabularyItemScalarFieldEnum = {
+  id: 'id',
+  lessonId: 'lessonId',
+  term: 'term',
+  meaning: 'meaning',
+  explanation: 'explanation',
+  order: 'order',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type VocabularyItemScalarFieldEnum = (typeof VocabularyItemScalarFieldEnum)[keyof typeof VocabularyItemScalarFieldEnum]
+
+
+export const ExpressionScalarFieldEnum = {
+  id: 'id',
+  lessonId: 'lessonId',
+  text: 'text',
+  translation: 'translation',
+  explanation: 'explanation',
+  order: 'order',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ExpressionScalarFieldEnum = (typeof ExpressionScalarFieldEnum)[keyof typeof ExpressionScalarFieldEnum]
+
+
+export const ExampleSentenceScalarFieldEnum = {
+  id: 'id',
+  lessonId: 'lessonId',
+  text: 'text',
+  translation: 'translation',
+  explanation: 'explanation',
+  order: 'order',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ExampleSentenceScalarFieldEnum = (typeof ExampleSentenceScalarFieldEnum)[keyof typeof ExampleSentenceScalarFieldEnum]
+
+
+export const AudioScalarFieldEnum = {
+  id: 'id',
+  lessonId: 'lessonId',
+  title: 'title',
+  url: 'url',
+  order: 'order',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AudioScalarFieldEnum = (typeof AudioScalarFieldEnum)[keyof typeof AudioScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1134,6 +1489,10 @@ export type GlobalOmitConfig = {
   level?: Prisma.LevelOmit
   unit?: Prisma.UnitOmit
   lesson?: Prisma.LessonOmit
+  vocabularyItem?: Prisma.VocabularyItemOmit
+  expression?: Prisma.ExpressionOmit
+  exampleSentence?: Prisma.ExampleSentenceOmit
+  audio?: Prisma.AudioOmit
 }
 
 /* Types for Logging */
