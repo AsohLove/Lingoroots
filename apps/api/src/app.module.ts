@@ -6,10 +6,19 @@ import { LanguageModule } from './language/language.module.js';
 import { CourseModule } from './course/course.module.js';
 import { UnitModule } from './unit/unit.module.js';
 import { LessonModule } from './lesson/lesson.module.js';
+import { AppConfigModule } from './config/config.module.js';
+import { HealthModule } from './health/health.module.js';
 
 
 @Module({
-  imports: [PrismaModule, LanguageModule, CourseModule, UnitModule, LessonModule],
+  imports: [AppConfigModule, 
+            PrismaModule, 
+            LanguageModule, 
+            CourseModule, 
+            UnitModule, 
+            LessonModule,
+            HealthModule,
+          ],
   controllers: [AppController],
   providers: [AppService],
 })

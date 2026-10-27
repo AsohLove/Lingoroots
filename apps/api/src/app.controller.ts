@@ -1,13 +1,12 @@
 import { Controller, Get } from '@nestjs/common';
 
-@Controller('health')
+@Controller()
 export class AppController {
-
   @Get()
-  getHealth() {
-    return  {
-      status: 'ok',
+  getRoot() {
+    return {
       service: 'lingoroots-api',
+      status: 'ok',
     };
   }
 }

@@ -3,7 +3,7 @@ import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 
 describe('AppController', () => {
-  let appController: AppController;
+  let controller: AppController;
 
   beforeEach(async () => {
     const app: TestingModule = await Test.createTestingModule({
@@ -11,12 +11,13 @@ describe('AppController', () => {
       providers: [AppService],
     }).compile();
 
-    appController = app.get<AppController>(AppController);
+    controller = app.get<AppController>(AppController);
   });
 
-  describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
+  it('should return API health status', () => {
+    expect(controller.getRoot()).toEqual({
+      status: 'ok',
+      service: 'lingoroots-api',
     });
   });
 });
