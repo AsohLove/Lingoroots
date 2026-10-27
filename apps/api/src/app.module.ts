@@ -8,6 +8,7 @@ import { UnitModule } from './unit/unit.module.js';
 import { LessonModule } from './lesson/lesson.module.js';
 import { AppConfigModule } from './config/config.module.js';
 import { HealthModule } from './health/health.module.js';
+import { AuthModule } from './auth/auth.module.js';
 
 
 @Module({
@@ -18,6 +19,7 @@ import { HealthModule } from './health/health.module.js';
             UnitModule, 
             LessonModule,
             HealthModule,
+            AuthModule,
           ],
   controllers: [AppController],
   providers: [AppService],
