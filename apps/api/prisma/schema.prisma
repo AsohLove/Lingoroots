@@ -14,19 +14,26 @@ model Language {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  courses     Course[]
+  courses        Course[]
+  variants       Variant[]
+  authorizations LanguageAuthorization[]
 }
 
 model Course {
   id          String   @id @default(uuid())
   languageId  String
+  variantId   String?
   name        String
   description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  language    Language @relation(fields: [languageId], references: [id])
-  levels      Level[]
+  language Language @relation(fields: [languageId], references: [id])
+  variant  Variant? @relation(fields: [variantId], references: [id])
+  levels   Level[]
+
+  @@index([languageId])
+  @@index([variantId])
 }
 
 model Level {
@@ -39,8 +46,8 @@ model Level {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  course      Course   @relation(fields: [courseId], references: [id])
-  units       Unit[]
+  course Course @relation(fields: [courseId], references: [id])
+  units  Unit[]
 }
 
 model Unit {
@@ -52,8 +59,8 @@ model Unit {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  level       Level    @relation(fields: [levelId], references: [id])
-  lessons     Lesson[]
+  level   Level    @relation(fields: [levelId], references: [id])
+  lessons Lesson[]
 }
 
 model Lesson {
@@ -65,24 +72,48 @@ model Lesson {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  unit              Unit     @relation(fields: [unitId], references: [id])
-  vocabularyItems   VocabularyItem[]
-  expressions       Expression[]
-  exampleSentences  ExampleSentence[]
-  audio             Audio[]
+  unit             Unit              @relation(fields: [unitId], references: [id])
+  vocabularyItems  VocabularyItem[]
+  expressions      Expression[]
+  exampleSentences ExampleSentence[]
+  audio            Audio[]
 }
 
 model VocabularyItem {
-  id          String   @id @default(uuid())
+  id          String        @id @default(uuid())
   lessonId    String
+  createdById String
   term        String
   meaning     String
   explanation String?
   order       Int
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  status      ContentStatus @default(DRAFT)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 
-  lesson      Lesson   @relation(fields: [lessonId], references: [id])
+  lesson    Lesson @relation(fields: [lessonId], references: [id])
+  createdBy User   @relation(fields: [createdById], references: [id])
+
+  reviews ContentReview[]
+
+  @@index([lessonId])
+  @@index([createdById])
+  @@index([status])
+}
+
+model ContentReview {
+  id           String        @id @default(uuid())
+  vocabularyId String
+  reviewerId   String
+  status       ContentStatus
+  comment      String?
+  createdAt    DateTime      @default(now())
+
+  vocabulary VocabularyItem @relation(fields: [vocabularyId], references: [id])
+  reviewer   User           @relation(fields: [reviewerId], references: [id])
+
+  @@index([vocabularyId])
+  @@index([reviewerId])
 }
 
 model Expression {
@@ -95,7 +126,7 @@ model Expression {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  lesson      Lesson   @relation(fields: [lessonId], references: [id])
+  lesson Lesson @relation(fields: [lessonId], references: [id])
 }
 
 model ExampleSentence {
@@ -108,7 +139,7 @@ model ExampleSentence {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  lesson      Lesson   @relation(fields: [lessonId], references: [id])
+  lesson Lesson @relation(fields: [lessonId], references: [id])
 }
 
 model Audio {
@@ -124,15 +155,18 @@ model Audio {
 }
 
 model User {
-  id           String    @id @default(uuid())
+  id           String   @id @default(uuid())
   name         String
-  email        String    @unique
+  email        String   @unique
   passwordHash String
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  sessions     Session[]
-  roles        UserRole[]
+  sessions        Session[]
+  roles           UserRole[]
+  authorizations  LanguageAuthorization[]
+  vocabularyItems VocabularyItem[]
+  contentReviews  ContentReview[]
 }
 
 model Session {
@@ -154,6 +188,16 @@ enum Role {
   ADMINISTRATOR
 }
 
+enum ContentStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  CHANGES_REQUESTED
+  APPROVED
+  PUBLISHED
+  REJECTED
+}
+
 model UserRole {
   id        String   @id @default(uuid())
   userId    String
@@ -164,4 +208,36 @@ model UserRole {
 
   @@unique([userId, role])
   @@index([userId])
+}
+
+model Variant {
+  id          String   @id @default(uuid())
+  languageId  String
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  language       Language                @relation(fields: [languageId], references: [id])
+  courses        Course[]
+  authorizations LanguageAuthorization[]
+
+  @@index([languageId])
+}
+
+model LanguageAuthorization {
+  id         String   @id @default(uuid())
+  userId     String
+  languageId String
+  variantId  String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  language Language @relation(fields: [languageId], references: [id], onDelete: Cascade)
+  variant  Variant? @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([languageId])
+  @@index([variantId])
 }
