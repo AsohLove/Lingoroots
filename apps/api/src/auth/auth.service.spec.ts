@@ -44,11 +44,13 @@ describe('AuthService', () => {
     it('should create a user with a hashed password', async () => {
       prismaMock.user.create.mockImplementation(({ data }) => ({
         id: 'user-1',
+        name: data.name,
         email: data.email,
         createdAt: new Date('2026-10-28T09:00:00Z'),
       }));
 
       const result = await service.register(
+        'Love Asoh',
         'learner@example.com',
         'password123',
       );
@@ -61,6 +63,12 @@ describe('AuthService', () => {
       expect(createCall.data.email).toBe(
         'learner@example.com',
       );
+
+      expect(createCall.data.roles).toEqual({
+        create: {
+          role: 'LEARNER',
+        },
+      });
 
       expect(createCall.data.passwordHash).not.toBe(
         'password123',
@@ -90,6 +98,7 @@ describe('AuthService', () => {
 
       await expect(
         service.register(
+          'Love Asoh',
           'learner@example.com',
           'password123',
         ),
@@ -188,6 +197,11 @@ describe('AuthService', () => {
           id: 'user-1',
           email: 'learner@example.com',
           createdAt: new Date(),
+          roles: [
+            {
+              role: 'LEARNER',
+            },
+          ],
         },
       });
 
@@ -197,6 +211,8 @@ describe('AuthService', () => {
       expect(result.email).toBe(
         'learner@example.com',
       );
+
+      expect(result.roles).toEqual(['LEARNER']);
     });
 
     it('should reject a missing session', async () => {
@@ -219,6 +235,11 @@ describe('AuthService', () => {
           id: 'user-1',
           email: 'learner@example.com',
           createdAt: new Date(),
+          roles: [
+            {
+              role: 'LEARNER',
+            },
+          ],
         },
       });
 

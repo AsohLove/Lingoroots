@@ -11,17 +11,24 @@ import { PrismaService } from '../prisma/prisma.service.js';
 export class AuthService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async register(email: string, password: string) {
+  async register(name: string, email: string, password: string) {
     const passwordHash = await argon2.hash(password);
 
     try {
       return await this.prisma.user.create({
         data: {
+          name,
           email,
           passwordHash,
+          roles: {
+            create: {
+              role: 'LEARNER',
+            },
+          },
         },
         select: {
           id: true,
+          name: true,
           email: true,
           createdAt: true,
         },
@@ -65,6 +72,7 @@ export class AuthService {
     return {
       user: {
         id: user.id,
+        name: user.name,
         email: user.email,
         createdAt: user.createdAt,
       },
@@ -81,8 +89,14 @@ export class AuthService {
         user: {
           select: {
             id: true,
+            name: true,
             email: true,
             createdAt: true,
+            roles: {
+              select: {
+                role: true,
+              },
+            },
           },
         },
       },
@@ -96,9 +110,14 @@ export class AuthService {
       throw new UnauthorizedException('Session has expired');
     }
 
-    return session.user;
+    return {
+      id: session.user.id,
+      name: session.user.name,
+      email: session.user.email,
+      createdAt: session.user.createdAt,
+      roles: session.user.roles.map((userRole) => userRole.role),
+    };
   }
-
   async logout(sessionId: string) {
     await this.prisma.session.deleteMany({
       where: {

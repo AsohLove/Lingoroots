@@ -6,6 +6,7 @@ import {
   Get,
   Req,
   UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
 import type { Response, Request } from 'express';
 import {
@@ -19,6 +20,7 @@ import {
 import { AuthService } from './auth.service.js';
 import { RegisterDto } from './dto/register.dto.js';
 import { LoginDto } from './dto/login.dto.js';
+import { AuthGuard } from './guards/auth.guard.js';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -36,7 +38,7 @@ export class AuthController {
     description: 'Invalid registration data',
   })
   register(@Body() registerDto: RegisterDto) {
-    return this.authService.register(registerDto.email, registerDto.password);
+    return this.authService.register(registerDto.name, registerDto.email, registerDto.password);
   }
 
   @Post('login')
@@ -74,6 +76,7 @@ export class AuthController {
   }
 
   @Get('me')
+  @UseGuards(AuthGuard)
   @ApiOperation({
     summary: 'Get the currently authenticated user',
   })
@@ -84,13 +87,7 @@ export class AuthController {
     description: 'Authentication is required',
   })
   async me(@Req() request: Request) {
-    const sessionId = request.cookies?.session_id;
-
-    if (!sessionId) {
-      throw new UnauthorizedException('Authentication is required');
-    }
-
-    return this.authService.getCurrentUser(sessionId);
+    return request.user;
   }
 
   @Post('logout')

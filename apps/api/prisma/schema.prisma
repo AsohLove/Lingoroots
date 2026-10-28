@@ -125,12 +125,14 @@ model Audio {
 
 model User {
   id           String    @id @default(uuid())
+  name         String
   email        String    @unique
   passwordHash String
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
   sessions     Session[]
+  roles        UserRole[]
 }
 
 model Session {
@@ -143,4 +145,23 @@ model Session {
 
   @@index([userId])
   @@index([expiresAt])
+}
+
+enum Role {
+  LEARNER
+  CONTRIBUTOR
+  REVIEWER
+  ADMINISTRATOR
+}
+
+model UserRole {
+  id        String   @id @default(uuid())
+  userId    String
+  role      Role
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, role])
+  @@index([userId])
 }
