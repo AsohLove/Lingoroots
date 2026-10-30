@@ -81,4 +81,19 @@ export class AuthorizationService {
       throw new ForbiddenException('You do not have access to this variant');
     }
   }
+
+  async getUserAuthorizations(userId: string) {
+    return this.prisma.languageAuthorization.findMany({
+      where: {
+        userId,
+      },
+      include: {
+        language: true,
+        variant: true,
+      },
+      orderBy: {
+        createdAt: 'asc',
+      },
+    });
+  }
 }

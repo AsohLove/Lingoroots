@@ -21,11 +21,15 @@ import { AuthService } from './auth.service.js';
 import { RegisterDto } from './dto/register.dto.js';
 import { LoginDto } from './dto/login.dto.js';
 import { AuthGuard } from './guards/auth.guard.js';
+import { AuthorizationService } from './authorization.service.js';
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly authorizationService: AuthorizationService,
+  ) {}
 
   @Post('register')
   @ApiOperation({
@@ -38,7 +42,11 @@ export class AuthController {
     description: 'Invalid registration data',
   })
   register(@Body() registerDto: RegisterDto) {
-    return this.authService.register(registerDto.name, registerDto.email, registerDto.password);
+    return this.authService.register(
+      registerDto.name,
+      registerDto.email,
+      registerDto.password,
+    );
   }
 
   @Post('login')
@@ -116,5 +124,17 @@ export class AuthController {
     return {
       message: 'Logged out successfully',
     };
+  }
+
+  @Get('me/authorizations')
+  @UseGuards(AuthGuard)
+  async getMyAuthorizations(@Req() request: Request) {
+    const user = request.user;
+
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+
+    return this.authorizationService.getUserAuthorizations(user.id);
   }
 }
