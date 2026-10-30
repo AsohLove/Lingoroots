@@ -12,6 +12,7 @@ import type {
 import type {
   UpdateVocabularyDto,
 } from './dto/update-vocabulary.dto.js';
+import { ReviewVocabularyDto } from './dto/review-vocabulary.dto.js';
 
 @Injectable()
 export class ContentService {
@@ -183,4 +184,226 @@ export class ContentService {
       },
     });
   }
+
+  async getSubmittedVocabulary(user: AuthenticatedUser) {
+    this.authorizationService.requireRole(user, 'REVIEWER');
+
+    return this.prisma.vocabularyItem.findMany({
+      where: {
+        status: 'SUBMITTED',
+        createdById: {
+          not: user.id,
+        },
+      },
+      include: {
+        lesson: {
+          include: {
+            unit: {
+              include: {
+                level: {
+                  include: {
+                    course: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        createdBy: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'asc',
+      },
+    });
+  }
+
+  async startVocabularyReview(vocabularyId: string, user: AuthenticatedUser) {
+    this.authorizationService.requireRole(user, 'REVIEWER');
+
+    const vocabulary = await this.prisma.vocabularyItem.findUnique({
+      where: {
+        id: vocabularyId,
+      },
+    });
+
+    if (!vocabulary) {
+      throw new NotFoundException('Vocabulary item not found');
+    }
+
+    if (vocabulary.createdById === user.id) {
+      throw new ForbiddenException('You cannot review your own content');
+    }
+
+    if (vocabulary.status !== 'SUBMITTED') {
+      throw new ForbiddenException('Only submitted content can enter review');
+    }
+
+    return this.prisma.vocabularyItem.update({
+      where: {
+        id: vocabularyId,
+      },
+      data: {
+        status: 'UNDER_REVIEW',
+      },
+    });
+  }
+  async approveVocabulary(
+    vocabularyId: string,
+    user: AuthenticatedUser,
+    dto: ReviewVocabularyDto,
+  ) {
+    this.authorizationService.requireRole(user, 'REVIEWER');
+
+    const vocabulary = await this.prisma.vocabularyItem.findUnique({
+      where: {
+        id: vocabularyId,
+      },
+    });
+
+    if (!vocabulary) {
+      throw new NotFoundException('Vocabulary item not found');
+    }
+
+    if (vocabulary.createdById === user.id) {
+      throw new ForbiddenException('You cannot review your own content');
+    }
+
+    if (vocabulary.status !== 'UNDER_REVIEW') {
+      throw new ForbiddenException('Vocabulary must be under review');
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      const updated = await tx.vocabularyItem.update({
+        where: {
+          id: vocabularyId,
+        },
+        data: {
+          status: 'PUBLISHED',
+        },
+      });
+
+      await tx.contentReview.create({
+        data: {
+          vocabularyId,
+          reviewerId: user.id,
+          status: 'APPROVED',
+          comment: dto.comment,
+        },
+      });
+
+      return updated;
+    });
+  }
+  async requestVocabularyChanges(
+    vocabularyId: string,
+    user: AuthenticatedUser,
+    dto: ReviewVocabularyDto,
+  ) {
+    this.authorizationService.requireRole(user, 'REVIEWER');
+
+    if (!dto.comment) {
+      throw new ForbiddenException(
+        'A comment is required when requesting changes',
+      );
+    }
+
+    const vocabulary = await this.prisma.vocabularyItem.findUnique({
+      where: {
+        id: vocabularyId,
+      },
+    });
+
+    if (!vocabulary) {
+      throw new NotFoundException('Vocabulary item not found');
+    }
+
+    if (vocabulary.createdById === user.id) {
+      throw new ForbiddenException('You cannot review your own content');
+    }
+
+    if (vocabulary.status !== 'UNDER_REVIEW') {
+      throw new ForbiddenException('Vocabulary must be under review');
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      const updated = await tx.vocabularyItem.update({
+        where: {
+          id: vocabularyId,
+        },
+        data: {
+          status: 'CHANGES_REQUESTED',
+        },
+      });
+
+      await tx.contentReview.create({
+        data: {
+          vocabularyId,
+          reviewerId: user.id,
+          status: 'CHANGES_REQUESTED',
+          comment: dto.comment,
+        },
+      });
+
+      return updated;
+    });
+  }
+
+  async rejectVocabulary(
+  vocabularyId: string,
+  user: AuthenticatedUser,
+  dto: ReviewVocabularyDto,
+) {
+  this.authorizationService.requireRole(user, 'REVIEWER');
+
+  if (!dto.comment) {
+    throw new ForbiddenException(
+      'A comment is required when rejecting content',
+    );
+  }
+
+  const vocabulary = await this.prisma.vocabularyItem.findUnique({
+    where: {
+      id: vocabularyId,
+    },
+  });
+
+  if (!vocabulary) {
+    throw new NotFoundException('Vocabulary item not found');
+  }
+
+  if (vocabulary.createdById === user.id) {
+    throw new ForbiddenException('You cannot review your own content');
+  }
+
+  if (vocabulary.status !== 'UNDER_REVIEW') {
+    throw new ForbiddenException('Vocabulary must be under review');
+  }
+
+  return this.prisma.$transaction(async (tx) => {
+    const updated = await tx.vocabularyItem.update({
+      where: {
+        id: vocabularyId,
+      },
+      data: {
+        status: 'REJECTED',
+      },
+    });
+
+    await tx.contentReview.create({
+      data: {
+        vocabularyId,
+        reviewerId: user.id,
+        status: 'REJECTED',
+        comment: dto.comment,
+      },
+    });
+
+    return updated;
+  });
+}
 }

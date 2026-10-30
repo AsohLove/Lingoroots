@@ -21,6 +21,10 @@ import { AuthGuard } from '../auth/guards/auth.guard.js';
 import { ContentService } from './content.service.js';
 import { CreateVocabularyDto } from './dto/create-vocabulary.dto.js';
 import { UpdateVocabularyDto } from './dto/update-vocabulary.dto.js';
+import { RolesGuard } from '../auth/guards/roles.guard.js';
+import { Roles } from '../auth/decorators/roles.decorator.js';
+import { ReviewVocabularyDto } from './dto/review-vocabulary.dto.js';
+
 
 @ApiTags('Content')
 @ApiBearerAuth()
@@ -88,4 +92,73 @@ export class ContentController {
       request.user!,
     );
   }
+
+  @Get('reviews/vocabulary')
+@UseGuards(RolesGuard)
+@Roles('REVIEWER', 'ADMINISTRATOR')
+getSubmittedVocabulary(
+  @Req() request: Request,
+) {
+  return this.contentService.getSubmittedVocabulary(
+    request.user!,
+  );
+}
+
+@Post('vocabulary/:vocabularyId/review/start')
+@UseGuards(RolesGuard)
+@Roles('REVIEWER', 'ADMINISTRATOR')
+startReview(
+  @Param('vocabularyId') vocabularyId: string,
+  @Req() request: Request,
+) {
+  return this.contentService.startVocabularyReview(
+    vocabularyId,
+    request.user!,
+  );
+}
+
+@Post('vocabulary/:vocabularyId/review/approve')
+@UseGuards(RolesGuard)
+@Roles('REVIEWER', 'ADMINISTRATOR')
+approve(
+  @Param('vocabularyId') vocabularyId: string,
+  @Body() dto: ReviewVocabularyDto,
+  @Req() request: Request,
+) {
+  return this.contentService.approveVocabulary(
+    vocabularyId,
+    request.user!,
+    dto,
+  );
+}
+
+@Post('vocabulary/:vocabularyId/review/request-changes')
+@UseGuards(RolesGuard)
+@Roles('REVIEWER', 'ADMINISTRATOR')
+requestChanges(
+  @Param('vocabularyId') vocabularyId: string,
+  @Body() dto: ReviewVocabularyDto,
+  @Req() request: Request,
+) {
+  return this.contentService.requestVocabularyChanges(
+    vocabularyId,
+    request.user!,
+    dto,
+  );
+}
+
+@Post('vocabulary/:vocabularyId/review/reject')
+@UseGuards(RolesGuard)
+@Roles('REVIEWER', 'ADMINISTRATOR')
+reject(
+  @Param('vocabularyId') vocabularyId: string,
+  @Body() dto: ReviewVocabularyDto,
+  @Req() request: Request,
+) {
+  return this.contentService.rejectVocabulary(
+    vocabularyId,
+    request.user!,
+    dto,
+  );
+}
 }
