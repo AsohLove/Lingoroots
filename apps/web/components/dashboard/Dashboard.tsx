@@ -15,6 +15,8 @@ import RecentContent from "./RecentContent";
 import AccessRoles from "./AccessRoles";
 import ContentAccess from "./ContentAccess";
 
+import ContentWorkspace from "../content/ContentWorkspace";
+
 type DashboardProps = {
   user: AuthenticatedUser;
   onLogout: () => void;
@@ -76,7 +78,9 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
         <DashboardHeader user={user} />
 
         <main className="flex-1 p-8">
-          {activePage !== "Dashboard" ? (
+          {activePage === "Content" ? (
+            <ContentWorkspace />
+          ) : activePage !== "Dashboard" ? (
             <div className="rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
               <h2 className="text-xl font-semibold text-slate-900">
                 {activePage}

@@ -10,6 +10,7 @@ import { AppConfigModule } from './config/config.module.js';
 import { HealthModule } from './health/health.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { ContentModule } from './content/content.module.js';
+import { LevelModule } from './level/level.module.js';
 
 
 @Module({
@@ -22,6 +23,7 @@ import { ContentModule } from './content/content.module.js';
             HealthModule,
             AuthModule,
             ContentModule,
+            LevelModule,
           ],
   controllers: [AppController],
   providers: [AppService],
