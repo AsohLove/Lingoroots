@@ -1,136 +1,140 @@
-
+import { useCallback, useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
   View,
-} from "react-native";
+} from 'react-native';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import type { LessonContent } from "../api/lessonContent";
+import {
+  getLessonContent,
+  type LessonContent,
+} from '../api/lessonContent';
+import type { RootStackParamList } from '../navigation/types';
+import { colors } from '../theme/colors';
 
-type LessonScreenProps = {
-  lessonContent: LessonContent;
-};
+type Props = NativeStackScreenProps<RootStackParamList, 'Lesson'>;
 
-export default function LessonScreen({
-  lessonContent,
-}: LessonScreenProps) {
-  const hasVocabulary = lessonContent.vocabularyItems.length > 0;
-  const hasExpressions = lessonContent.expressions.length > 0;
-  const hasExamples = lessonContent.exampleSentences.length > 0;
+export default function LessonScreen({ route }: Props) {
+  const { unitId, lessonId, lessonName } = route.params;
+
+  const [content, setContent] = useState<LessonContent | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadContent = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const result = await getLessonContent(unitId, lessonId);
+      setContent(result);
+    } catch (err) {
+      console.error('Lesson content error:', err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'We could not load this lesson.',
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [unitId, lessonId]);
+
+  useEffect(() => {
+    loadContent();
+  }, [loadContent]);
+
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color={colors.forest} />
+        <Text style={styles.muted}>Loading lesson...</Text>
+      </View>
+    );
+  }
+
+  if (error || !content) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.heading}>Unable to load lesson</Text>
+        <Text style={styles.muted}>
+          {error ?? 'Lesson content is unavailable.'}
+        </Text>
+
+        <Pressable style={styles.retryButton} onPress={loadContent}>
+          <Text style={styles.retryText}>Try again</Text>
+        </Pressable>
+      </View>
+    );
+  }
 
   return (
     <ScrollView
       style={styles.container}
-      contentContainerStyle={styles.contentContainer}
+      contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-      <View style={styles.header}>
-        <Text style={styles.eyebrow}>LESSON</Text>
+      <Text style={styles.eyebrow}>YOUR LESSON</Text>
+      <Text style={styles.title}>{lessonName}</Text>
 
-        <Text style={styles.title}>
-          {lessonContent.name}
+      {content.description ? (
+        <Text style={styles.description}>{content.description}</Text>
+      ) : null}
+
+      <Text style={styles.sectionTitle}>Vocabulary</Text>
+
+      {content.vocabularyItems.length === 0 ? (
+        <Text style={styles.muted}>
+          No vocabulary has been added to this lesson yet.
         </Text>
+      ) : (
+        content.vocabularyItems.map((item, index) => (
+          <View key={item.id} style={styles.card}>
+            <Text style={styles.number}>WORD {index + 1}</Text>
+            <Text style={styles.term}>{item.term}</Text>
+            <Text style={styles.meaning}>{item.meaning}</Text>
 
-        {lessonContent.description && (
-          <Text style={styles.description}>
-            {lessonContent.description}
-          </Text>
-        )}
-      </View>
-
-      <View style={styles.progressInfo}>
-        <Text style={styles.progressText}>
-          {lessonContent.vocabularyItems.length} vocabulary items
-        </Text>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Vocabulary</Text>
-
-        {hasVocabulary ? (
-          lessonContent.vocabularyItems.map((item, index) => (
-            <View key={item.id} style={styles.contentItem}>
-              <View style={styles.itemNumber}>
-                <Text style={styles.itemNumberText}>
-                  {index + 1}
-                </Text>
-              </View>
-
-              <View style={styles.itemBody}>
-                <Text style={styles.term}>{item.term}</Text>
-
-                <Text style={styles.translation}>
-                  {item.meaning}
-                </Text>
-
-                {item.explanation && (
-                  <Text style={styles.explanation}>
-                    {item.explanation}
-                  </Text>
-                )}
-              </View>
-            </View>
-          ))
-        ) : (
-          <Text style={styles.emptyText}>
-            No published vocabulary is available for this lesson yet.
-          </Text>
-        )}
-      </View>
-
-      {hasExpressions && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Expressions</Text>
-
-          {lessonContent.expressions.map((expression) => (
-            <View key={expression.id} style={styles.contentItem}>
-              <View style={styles.itemBody}>
-                <Text style={styles.term}>
-                  {expression.text}
-                </Text>
-
-                <Text style={styles.translation}>
-                  {expression.translation}
-                </Text>
-
-                {expression.explanation && (
-                  <Text style={styles.explanation}>
-                    {expression.explanation}
-                  </Text>
-                )}
-              </View>
-            </View>
-          ))}
-        </View>
+            {item.explanation ? (
+              <Text style={styles.explanation}>{item.explanation}</Text>
+            ) : null}
+          </View>
+        ))
       )}
 
-      {hasExamples && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            Example Sentences
-          </Text>
+      {content.expressions.length > 0 && (
+        <>
+          <Text style={styles.sectionTitle}>Expressions</Text>
 
-          {lessonContent.exampleSentences.map((sentence) => (
-            <View key={sentence.id} style={styles.contentItem}>
-              <View style={styles.itemBody}>
-                <Text style={styles.term}>
-                  {sentence.text}
-                </Text>
-
-                <Text style={styles.translation}>
-                  {sentence.translation}
-                </Text>
-
-                {sentence.explanation && (
-                  <Text style={styles.explanation}>
-                    {sentence.explanation}
-                  </Text>
-                )}
-              </View>
+          {content.expressions.map((item) => (
+            <View key={item.id} style={styles.card}>
+              <Text style={styles.term}>{item.text}</Text>
+              <Text style={styles.meaning}>{item.translation}</Text>
+              {item.explanation ? (
+                <Text style={styles.explanation}>{item.explanation}</Text>
+              ) : null}
             </View>
           ))}
-        </View>
+        </>
+      )}
+
+      {content.exampleSentences.length > 0 && (
+        <>
+          <Text style={styles.sectionTitle}>Example sentences</Text>
+
+          {content.exampleSentences.map((item) => (
+            <View key={item.id} style={styles.card}>
+              <Text style={styles.term}>{item.text}</Text>
+              <Text style={styles.meaning}>{item.translation}</Text>
+              {item.explanation ? (
+                <Text style={styles.explanation}>{item.explanation}</Text>
+              ) : null}
+            </View>
+          ))}
+        </>
       )}
     </ScrollView>
   );
@@ -139,118 +143,99 @@ export default function LessonScreen({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F8FAFC",
+    backgroundColor: colors.background,
   },
-
-  contentContainer: {
+  content: {
+    padding: 22,
+    paddingBottom: 40,
+  },
+  center: {
+    flex: 1,
+    backgroundColor: colors.background,
+    alignItems: 'center',
+    justifyContent: 'center',
     padding: 24,
-    paddingBottom: 48,
   },
-
-  header: {
-    marginBottom: 24,
-  },
-
   eyebrow: {
-    fontSize: 12,
-    fontWeight: "700",
-    letterSpacing: 1.5,
-    color: "#64748B",
-    marginBottom: 8,
+    color: colors.forestLight,
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 1.4,
   },
-
   title: {
+    color: colors.text,
     fontSize: 28,
-    fontWeight: "700",
-    color: "#0F172A",
+    fontWeight: '800',
+    marginTop: 10,
   },
-
   description: {
-    fontSize: 16,
-    lineHeight: 24,
-    color: "#64748B",
+    color: colors.muted,
+    fontSize: 14,
+    lineHeight: 22,
+    marginTop: 10,
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    color: colors.text,
+    fontSize: 19,
+    fontWeight: '800',
+    marginTop: 24,
+    marginBottom: 14,
+  },
+  card: {
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 16,
+    padding: 18,
+    marginBottom: 12,
+  },
+  number: {
+    color: colors.forestLight,
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 1,
+  },
+  term: {
+    color: colors.text,
+    fontSize: 19,
+    fontWeight: '800',
     marginTop: 8,
   },
-
-  progressInfo: {
-    backgroundColor: "#E2E8F0",
-    borderRadius: 10,
-    padding: 14,
-    marginBottom: 12,
-  },
-
-  progressText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#334155",
-  },
-
-  section: {
-    marginTop: 24,
-  },
-
-  sectionTitle: {
-    fontSize: 21,
-    fontWeight: "700",
-    color: "#0F172A",
-    marginBottom: 12,
-  },
-
-  contentItem: {
-    flexDirection: "row",
-    backgroundColor: "#FFFFFF",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-  },
-
-  itemNumber: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: "#E2E8F0",
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
-  },
-
-  itemNumberText: {
-    fontSize: 13,
-    fontWeight: "700",
-    color: "#334155",
-  },
-
-  itemBody: {
-    flex: 1,
-  },
-
-  term: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#0F172A",
-  },
-
-  translation: {
-    fontSize: 16,
-    color: "#334155",
+  meaning: {
+    color: colors.forest,
+    fontSize: 15,
+    fontWeight: '600',
     marginTop: 6,
   },
-
   explanation: {
+    color: colors.muted,
+    fontSize: 13,
+    lineHeight: 20,
+    marginTop: 10,
+  },
+  muted: {
+    color: colors.muted,
     fontSize: 14,
     lineHeight: 21,
-    color: "#64748B",
-    marginTop: 8,
+    marginTop: 10,
+    textAlign: 'center',
   },
-
-  emptyText: {
-    fontSize: 15,
-    lineHeight: 23,
-    color: "#64748B",
-    backgroundColor: "#FFFFFF",
-    borderRadius: 12,
-    padding: 16,
+  heading: {
+    color: colors.text,
+    fontSize: 20,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  retryButton: {
+    backgroundColor: colors.softGreen,
+    borderRadius: 10,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    marginTop: 18,
+  },
+  retryText: {
+    color: colors.forest,
+    fontWeight: '800',
   },
 });
