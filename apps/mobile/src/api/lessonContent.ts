@@ -1,3 +1,4 @@
+
 import { API_BASE_URL } from "../config/api";
 
 export type VocabularyItem = {
@@ -38,17 +39,47 @@ export type LessonContent = {
   exampleSentences: ExampleSentence[];
 };
 
+type Lesson = Omit<
+  LessonContent,
+  "vocabularyItems" | "expressions" | "exampleSentences"
+>;
+
+async function fetchApi<T>(endpoint: string): Promise<T> {
+  const response = await fetch(`${API_BASE_URL}${endpoint}`);
+
+  if (!response.ok) {
+    throw new Error(
+      `Request failed (${response.status}): ${endpoint}`,
+    );
+  }
+
+  return response.json() as Promise<T>;
+}
+
 export async function getLessonContent(
   unitId: string,
   lessonId: string,
 ): Promise<LessonContent> {
-  const response = await fetch(
-    `${API_BASE_URL}/units/${unitId}/lessons/${lessonId}/content`,
-  );
+  // Fetch the lesson details and its published vocabulary.
+  const [lessons, vocabularyItems] = await Promise.all([
+    fetchApi<Lesson[]>(`/units/${unitId}/lessons`),
+    fetchApi<VocabularyItem[]>(
+      `/lessons/${lessonId}/vocabulary`,
+    ),
+  ]);
 
-  if (!response.ok) {
-    throw new Error("Failed to load lesson content");
+  const lesson = lessons.find((item) => item.id === lessonId);
+
+  if (!lesson) {
+    throw new Error("Lesson not found in this unit");
   }
 
-  return response.json();
+  return {
+    ...lesson,
+    vocabularyItems: vocabularyItems.sort(
+      (a, b) => a.order - b.order,
+    ),
+    expressions: [],
+    exampleSentences: [],
+  };
 }

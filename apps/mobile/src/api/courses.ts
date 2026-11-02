@@ -30,3 +30,17 @@ export async function getCoursesByLanguage(
 
   return response.json();
 }
+
+export async function getLevelsByCourse(
+  courseId: string,
+): Promise<Level[]> {
+  const response = await fetch(
+    `${API_BASE_URL}/courses/${courseId}/levels`,
+  );
+
+  if (!response.ok) {
+    throw new Error(`Failed to load levels (${response.status})`);
+  }
+
+  return response.json();
+}
