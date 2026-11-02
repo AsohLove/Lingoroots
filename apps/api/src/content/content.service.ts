@@ -1,17 +1,16 @@
 import {
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+
 import type { AuthenticatedUser } from '../auth/types/authenticated-user.js';
 import { AuthorizationService } from '../auth/authorization.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-import type {
-  CreateVocabularyDto,
-} from './dto/create-vocabulary.dto.js';
-import type {
-  UpdateVocabularyDto,
-} from './dto/update-vocabulary.dto.js';
+
+import type { CreateVocabularyDto } from './dto/create-vocabulary.dto.js';
+import type { UpdateVocabularyDto } from './dto/update-vocabulary.dto.js';
 import { ReviewVocabularyDto } from './dto/review-vocabulary.dto.js';
 
 @Injectable()
@@ -83,15 +82,32 @@ export class ContentService {
       throw new NotFoundException('Lesson not found');
     }
 
-    return this.prisma.vocabularyItem.findMany({
+    const publishedItems = await this.prisma.vocabularyItem.findMany({
       where: {
         lessonId,
         status: 'PUBLISHED',
       },
-      orderBy: {
-        order: 'asc',
-      },
+      orderBy: [
+        {
+          versionGroupId: 'asc',
+        },
+        {
+          version: 'desc',
+        },
+      ],
     });
+
+    // Keep only the newest published version in each group.
+    const latestByGroup = new Map<string, (typeof publishedItems)[number]>();
+
+    for (const item of publishedItems) {
+      if (!latestByGroup.has(item.versionGroupId)) {
+        latestByGroup.set(item.versionGroupId, item);
+      }
+    }
+
+    // Preserve the lesson's display order.
+    return Array.from(latestByGroup.values()).sort((a, b) => a.order - b.order);
   }
 
   async updateVocabulary(
@@ -151,6 +167,78 @@ export class ContentService {
       data: dto,
     });
   }
+
+  async createVocabularyVersion(vocabularyId: string, user: AuthenticatedUser) {
+    this.authorizationService.requireRole(user, 'CONTRIBUTOR');
+
+    const vocabulary = await this.prisma.vocabularyItem.findUnique({
+      where: { id: vocabularyId },
+      include: {
+        lesson: {
+          include: {
+            unit: {
+              include: {
+                level: {
+                  include: {
+                    course: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!vocabulary) {
+      throw new NotFoundException('Vocabulary item not found');
+    }
+
+    if (vocabulary.createdById !== user.id) {
+      throw new ForbiddenException(
+        'You can only create versions of your own vocabulary',
+      );
+    }
+
+    if (vocabulary.status !== 'PUBLISHED') {
+      throw new ConflictException('Only published vocabulary can be versioned');
+    }
+
+    await this.authorizationService.requireLanguageAccess(
+      user.id,
+      vocabulary.lesson.unit.level.course.languageId,
+    );
+
+    const latestVersion = await this.prisma.vocabularyItem.findFirst({
+      where: {
+        versionGroupId: vocabulary.versionGroupId,
+      },
+      orderBy: {
+        version: 'desc',
+      },
+    });
+
+    if (!latestVersion || latestVersion.id !== vocabulary.id) {
+      throw new ConflictException(
+        'A newer version of this vocabulary already exists',
+      );
+    }
+
+    return this.prisma.vocabularyItem.create({
+      data: {
+        lessonId: vocabulary.lessonId,
+        createdById: user.id,
+        term: vocabulary.term,
+        meaning: vocabulary.meaning,
+        explanation: vocabulary.explanation,
+        order: vocabulary.order,
+        versionGroupId: vocabulary.versionGroupId,
+        version: vocabulary.version + 1,
+        status: 'DRAFT',
+      },
+    });
+  }
+
   async submitVocabulary(vocabularyId: string, user: AuthenticatedUser) {
     this.authorizationService.requireRole(user, 'CONTRIBUTOR');
 
@@ -190,10 +278,23 @@ export class ContentService {
 
     return this.prisma.vocabularyItem.findMany({
       where: {
-        status: 'SUBMITTED',
         createdById: {
           not: user.id,
         },
+        OR: [
+          {
+            status: 'SUBMITTED',
+          },
+          {
+            status: 'UNDER_REVIEW',
+            reviews: {
+              some: {
+                reviewerId: user.id,
+                status: 'UNDER_REVIEW',
+              },
+            },
+          },
+        ],
       },
       include: {
         lesson: {
@@ -243,15 +344,28 @@ export class ContentService {
       throw new ForbiddenException('Only submitted content can enter review');
     }
 
-    return this.prisma.vocabularyItem.update({
-      where: {
-        id: vocabularyId,
-      },
-      data: {
-        status: 'UNDER_REVIEW',
-      },
+    return this.prisma.$transaction(async (tx) => {
+      const updated = await tx.vocabularyItem.update({
+        where: {
+          id: vocabularyId,
+        },
+        data: {
+          status: 'UNDER_REVIEW',
+        },
+      });
+
+      await tx.contentReview.create({
+        data: {
+          vocabularyId,
+          reviewerId: user.id,
+          status: 'UNDER_REVIEW',
+        },
+      });
+
+      return updated;
     });
   }
+
   async approveVocabulary(
     vocabularyId: string,
     user: AuthenticatedUser,
@@ -277,6 +391,20 @@ export class ContentService {
       throw new ForbiddenException('Vocabulary must be under review');
     }
 
+    const activeReview = await this.prisma.contentReview.findFirst({
+      where: {
+        vocabularyId,
+        reviewerId: user.id,
+        status: 'UNDER_REVIEW',
+      },
+    });
+
+    if (!activeReview) {
+      throw new ForbiddenException(
+        'You do not own the active review for this content',
+      );
+    }
+
     return this.prisma.$transaction(async (tx) => {
       const updated = await tx.vocabularyItem.update({
         where: {
@@ -284,13 +412,15 @@ export class ContentService {
         },
         data: {
           status: 'PUBLISHED',
+          publishedAt: new Date(),
         },
       });
 
-      await tx.contentReview.create({
+      await tx.contentReview.update({
+        where: {
+          id: activeReview.id,
+        },
         data: {
-          vocabularyId,
-          reviewerId: user.id,
           status: 'APPROVED',
           comment: dto.comment,
         },
@@ -299,6 +429,7 @@ export class ContentService {
       return updated;
     });
   }
+
   async requestVocabularyChanges(
     vocabularyId: string,
     user: AuthenticatedUser,
@@ -306,7 +437,7 @@ export class ContentService {
   ) {
     this.authorizationService.requireRole(user, 'REVIEWER');
 
-    if (!dto.comment) {
+    if (!dto.comment?.trim()) {
       throw new ForbiddenException(
         'A comment is required when requesting changes',
       );
@@ -330,6 +461,20 @@ export class ContentService {
       throw new ForbiddenException('Vocabulary must be under review');
     }
 
+    const activeReview = await this.prisma.contentReview.findFirst({
+      where: {
+        vocabularyId,
+        reviewerId: user.id,
+        status: 'UNDER_REVIEW',
+      },
+    });
+
+    if (!activeReview) {
+      throw new ForbiddenException(
+        'You do not own the active review for this content',
+      );
+    }
+
     return this.prisma.$transaction(async (tx) => {
       const updated = await tx.vocabularyItem.update({
         where: {
@@ -340,10 +485,11 @@ export class ContentService {
         },
       });
 
-      await tx.contentReview.create({
+      await tx.contentReview.update({
+        where: {
+          id: activeReview.id,
+        },
         data: {
-          vocabularyId,
-          reviewerId: user.id,
           status: 'CHANGES_REQUESTED',
           comment: dto.comment,
         },
@@ -354,56 +500,71 @@ export class ContentService {
   }
 
   async rejectVocabulary(
-  vocabularyId: string,
-  user: AuthenticatedUser,
-  dto: ReviewVocabularyDto,
-) {
-  this.authorizationService.requireRole(user, 'REVIEWER');
+    vocabularyId: string,
+    user: AuthenticatedUser,
+    dto: ReviewVocabularyDto,
+  ) {
+    this.authorizationService.requireRole(user, 'REVIEWER');
 
-  if (!dto.comment) {
-    throw new ForbiddenException(
-      'A comment is required when rejecting content',
-    );
-  }
+    if (!dto.comment?.trim()) {
+      throw new ForbiddenException(
+        'A comment is required when rejecting content',
+      );
+    }
 
-  const vocabulary = await this.prisma.vocabularyItem.findUnique({
-    where: {
-      id: vocabularyId,
-    },
-  });
-
-  if (!vocabulary) {
-    throw new NotFoundException('Vocabulary item not found');
-  }
-
-  if (vocabulary.createdById === user.id) {
-    throw new ForbiddenException('You cannot review your own content');
-  }
-
-  if (vocabulary.status !== 'UNDER_REVIEW') {
-    throw new ForbiddenException('Vocabulary must be under review');
-  }
-
-  return this.prisma.$transaction(async (tx) => {
-    const updated = await tx.vocabularyItem.update({
+    const vocabulary = await this.prisma.vocabularyItem.findUnique({
       where: {
         id: vocabularyId,
       },
-      data: {
-        status: 'REJECTED',
-      },
     });
 
-    await tx.contentReview.create({
-      data: {
+    if (!vocabulary) {
+      throw new NotFoundException('Vocabulary item not found');
+    }
+
+    if (vocabulary.createdById === user.id) {
+      throw new ForbiddenException('You cannot review your own content');
+    }
+
+    if (vocabulary.status !== 'UNDER_REVIEW') {
+      throw new ForbiddenException('Vocabulary must be under review');
+    }
+
+    const activeReview = await this.prisma.contentReview.findFirst({
+      where: {
         vocabularyId,
         reviewerId: user.id,
-        status: 'REJECTED',
-        comment: dto.comment,
+        status: 'UNDER_REVIEW',
       },
     });
 
-    return updated;
-  });
-}
+    if (!activeReview) {
+      throw new ForbiddenException(
+        'You do not own the active review for this content',
+      );
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      const updated = await tx.vocabularyItem.update({
+        where: {
+          id: vocabularyId,
+        },
+        data: {
+          status: 'REJECTED',
+        },
+      });
+
+      await tx.contentReview.update({
+        where: {
+          id: activeReview.id,
+        },
+        data: {
+          status: 'REJECTED',
+          comment: dto.comment,
+        },
+      });
+
+      return updated;
+    });
+  }
 }

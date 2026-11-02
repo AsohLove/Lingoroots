@@ -13,7 +13,7 @@ import LanguageSelector from './LanguageSelector';
 import LevelSelector from './LevelSelector';
 import LessonSelector from './LessonSelector';
 import UnitSelector from './UnitSelector';
-import VocabularyForm from './VocabularyForm';
+import { VocabularyForm } from './VocabularyForm';
 
 type Course = {
   id: string;

@@ -306,6 +306,49 @@ async function main() {
     }
   }
 
+  const reviewerPasswordHash = await argon2.hash('password123');
+
+  let reviewer = await prisma.user.findUnique({
+    where: {
+      email: 'reviewer@lingoroots.local',
+    },
+  });
+
+  if (!reviewer) {
+    reviewer = await prisma.user.create({
+      data: {
+        name: 'LingoRoots Reviewer',
+        email: 'reviewer@lingoroots.local',
+        passwordHash: reviewerPasswordHash,
+      },
+    });
+  } else {
+    reviewer = await prisma.user.update({
+      where: {
+        id: reviewer.id,
+      },
+      data: {
+        passwordHash: reviewerPasswordHash,
+      },
+    });
+  }
+
+  await prisma.userRole.upsert({
+    where: {
+      userId_role: {
+        userId: reviewer.id,
+        role: 'REVIEWER',
+      },
+    },
+    update: {},
+    create: {
+      userId: reviewer.id,
+      role: 'REVIEWER',
+    },
+  });
+
+
+
   console.log('LingoRoots development seed completed.');
   console.log(`Contributor: ${contributor.email}`);
   console.log(`Language: ${language.name}`);

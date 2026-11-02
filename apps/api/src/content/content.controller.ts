@@ -79,6 +79,17 @@ export class ContentController {
     );
   }
 
+  @Post('vocabulary/:vocabularyId/versions')
+createVocabularyVersion(
+  @Param('vocabularyId') vocabularyId: string,
+  @Req() request: Request,
+) {
+  return this.contentService.createVocabularyVersion(
+    vocabularyId,
+    request.user!,
+  );
+}
+
   @Post('vocabulary/:vocabularyId/submit')
   @ApiOperation({
     summary: 'Submit vocabulary for review',

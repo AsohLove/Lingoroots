@@ -90,12 +90,17 @@ model VocabularyItem {
   status      ContentStatus @default(DRAFT)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
+  versionGroupId String   @default(uuid())
+  version        Int      @default(1)
+  publishedAt    DateTime?
 
   lesson    Lesson @relation(fields: [lessonId], references: [id])
   createdBy User   @relation(fields: [createdById], references: [id])
 
   reviews ContentReview[]
 
+  @@unique([versionGroupId, version])
+  @@index([versionGroupId])
   @@index([lessonId])
   @@index([createdById])
   @@index([status])

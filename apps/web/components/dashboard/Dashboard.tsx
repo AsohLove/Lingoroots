@@ -17,6 +17,8 @@ import ContentAccess from "./ContentAccess";
 
 import ContentWorkspace from "../content/ContentWorkspace";
 
+import { ReviewWorkspace } from "../reviews/ReviewWorkspace";
+
 type DashboardProps = {
   user: AuthenticatedUser;
   onLogout: () => void;
@@ -78,19 +80,11 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
         <DashboardHeader user={user} />
 
         <main className="flex-1 p-8">
-          {activePage === "Content" ? (
-            <ContentWorkspace />
-          ) : activePage !== "Dashboard" ? (
-            <div className="rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
-              <h2 className="text-xl font-semibold text-slate-900">
-                {activePage}
-              </h2>
+          {activePage === "Content" && <ContentWorkspace />}
 
-              <p className="mt-2 text-sm text-slate-500">
-                This section will be implemented in a later vertical slice.
-              </p>
-            </div>
-          ) : (
+          {activePage === "Reviews" && <ReviewWorkspace />}
+
+          {activePage === "Dashboard" && (
             <>
               <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
                 <StatCard
