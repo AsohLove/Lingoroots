@@ -1,27 +1,38 @@
+
 import {
   Body,
   Controller,
-  Post,
-  Res,
   Get,
+  Headers,
+  HttpCode,
+  HttpStatus,
+  Post,
   Req,
+  Res,
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
-import type { Response, Request } from 'express';
+import type { Request, Response } from 'express';
 import {
+  ApiAcceptedResponse,
   ApiBadRequestResponse,
-  ApiCreatedResponse,
+  ApiForbiddenResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+
 import { AuthService } from './auth.service.js';
+import { AuthorizationService } from './authorization.service.js';
 import { RegisterDto } from './dto/register.dto.js';
 import { LoginDto } from './dto/login.dto.js';
+import { VerifyEmailDto } from './dto/verify-email.dto.js';
+import { ResendVerificationDto } from './dto/resend-verification.dto.js';
 import { AuthGuard } from './guards/auth.guard.js';
-import { AuthorizationService } from './authorization.service.js';
+
+const SESSION_COOKIE = 'session_id';
+const SESSION_DURATION_MS = 1000 * 60 * 60 * 24 * 30;
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -31,12 +42,37 @@ export class AuthController {
     private readonly authorizationService: AuthorizationService,
   ) {}
 
+  private setSessionCookie(response: Response, sessionId: string) {
+    response.cookie(SESSION_COOKIE, sessionId, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      path: '/',
+      maxAge: SESSION_DURATION_MS,
+    });
+  }
+
+  private getSessionId(request: Request): string | undefined {
+    const authorization = request.headers.authorization;
+
+    if (authorization?.startsWith('Bearer ')) {
+      const token = authorization.slice('Bearer '.length).trim();
+
+      if (token) {
+        return token;
+      }
+    }
+
+    return request.cookies?.[SESSION_COOKIE];
+  }
+
   @Post('register')
+  @HttpCode(HttpStatus.ACCEPTED)
   @ApiOperation({
-    summary: 'Create a learner account',
+    summary: 'Register a learner and initiate email verification delivery',
   })
-  @ApiCreatedResponse({
-    description: 'Account created successfully',
+  @ApiAcceptedResponse({
+    description: 'Registration request accepted',
   })
   @ApiBadRequestResponse({
     description: 'Invalid registration data',
@@ -49,21 +85,72 @@ export class AuthController {
     );
   }
 
-  @Post('login')
+  @Post('verify-email')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Log in to a learner account',
+    summary: 'Verify an email address and sign in automatically',
   })
-  @ApiCreatedResponse({
-    description: 'Login successful',
+  @ApiOkResponse({
+    description: 'Email verified and authenticated session created',
   })
   @ApiBadRequestResponse({
-    description: 'Invalid login data',
+    description: 'Invalid or expired verification code',
+  })
+  async verifyEmail(
+    @Body() dto: VerifyEmailDto,
+    @Headers('x-client-type') clientType: string | undefined,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const result = await this.authService.verifyEmail(
+      dto.email,
+      dto.code,
+    );
+
+    // Verification now creates a session, just like a successful login.
+    this.setSessionCookie(response, result.sessionId);
+
+    const user = await this.authService.getCurrentUser(
+      result.sessionId,
+    );
+
+    return {
+      message: result.message,
+      user,
+      ...(clientType?.toLowerCase() === 'mobile'
+        ? { sessionToken: result.sessionId }
+        : {}),
+    };
+  }
+
+  @Post('resend-verification')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Resend an email verification code',
+  })
+  @ApiOkResponse({
+    description: 'Request processed',
+  })
+  resendVerification(@Body() dto: ResendVerificationDto) {
+    return this.authService.resendVerification(dto.email);
+  }
+
+  @Post('login')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Log in to a verified learner account',
+  })
+  @ApiOkResponse({
+    description: 'Login successful',
+  })
+  @ApiForbiddenResponse({
+    description: 'Email verification is required',
   })
   @ApiUnauthorizedResponse({
     description: 'Invalid email or password',
   })
   async login(
     @Body() loginDto: LoginDto,
+    @Headers('x-client-type') clientType: string | undefined,
     @Res({ passthrough: true }) response: Response,
   ) {
     const result = await this.authService.login(
@@ -71,15 +158,13 @@ export class AuthController {
       loginDto.password,
     );
 
-    response.cookie('session_id', result.sessionId, {
-      httpOnly: true,
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 1000 * 60 * 60 * 24 * 30,
-    });
+    this.setSessionCookie(response, result.sessionId);
 
     return {
       user: result.user,
+      ...(clientType?.toLowerCase() === 'mobile'
+        ? { sessionToken: result.sessionId }
+        : {}),
     };
   }
 
@@ -94,11 +179,12 @@ export class AuthController {
   @ApiUnauthorizedResponse({
     description: 'Authentication is required',
   })
-  async me(@Req() request: Request) {
+  me(@Req() request: Request) {
     return request.user;
   }
 
   @Post('logout')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Log out the currently authenticated user',
   })
@@ -109,16 +195,17 @@ export class AuthController {
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
-    const sessionId = request.cookies?.session_id;
+    const sessionId = this.getSessionId(request);
 
     if (sessionId) {
       await this.authService.logout(sessionId);
     }
 
-    response.clearCookie('session_id', {
+    response.clearCookie(SESSION_COOKIE, {
       httpOnly: true,
       sameSite: 'lax',
       secure: process.env.NODE_ENV === 'production',
+      path: '/',
     });
 
     return {

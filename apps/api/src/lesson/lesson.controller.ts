@@ -1,15 +1,20 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 import {
+  ApiBearerAuth,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
+
+import { AuthGuard } from '../auth/guards/auth.guard.js';
 import { LessonService } from './lesson.service.js';
 
 @ApiTags('Lesson')
+@ApiBearerAuth()
 @Controller('units/:unitId/lessons')
+@UseGuards(AuthGuard)
 export class LessonController {
   constructor(private readonly lessonService: LessonService) {}
 
@@ -33,7 +38,7 @@ export class LessonController {
 
   @Get(':lessonId/content')
   @ApiOperation({
-    summary: 'Get lesson content',
+    summary: 'Get published content for a lesson',
   })
   @ApiParam({
     name: 'unitId',
@@ -47,11 +52,12 @@ export class LessonController {
     description: 'Lesson content retrieved successfully',
   })
   @ApiNotFoundResponse({
-    description: 'Lesson was not found',
+    description: 'Lesson was not found in this unit',
   })
   findContent(
+    @Param('unitId') unitId: string,
     @Param('lessonId') lessonId: string,
   ) {
-    return this.lessonService.findContentByLesson(lessonId);
+    return this.lessonService.findContentByLesson(unitId, lessonId);
   }
 }

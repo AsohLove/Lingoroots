@@ -13,23 +13,24 @@ export class AuthGuard implements CanActivate {
     private readonly authService: AuthService,
   ) {}
 
-  async canActivate(
-    context: ExecutionContext,
-  ): Promise<boolean> {
-    const request =
-      context.switchToHttp().getRequest<Request>();
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context.switchToHttp().getRequest<Request>();
+
+    const authorization = request.headers.authorization;
+
+    const bearerToken =
+      authorization?.startsWith('Bearer ')
+        ? authorization.slice(7).trim()
+        : undefined;
 
     const sessionId =
-      request.cookies?.session_id;
+      bearerToken || request.cookies?.session_id;
 
     if (!sessionId) {
-      throw new UnauthorizedException(
-        'Authentication is required',
-      );
+      throw new UnauthorizedException('Authentication is required');
     }
 
-    const user =
-      await this.authService.getCurrentUser(sessionId);
+    const user = await this.authService.getCurrentUser(sessionId);
 
     request.user = user;
 

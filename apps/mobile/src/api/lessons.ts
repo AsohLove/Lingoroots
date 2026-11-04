@@ -1,4 +1,5 @@
-import { API_BASE_URL } from "../config/api";
+
+import { apiFetch } from './client';
 
 export type Lesson = {
   id: string;
@@ -8,14 +9,6 @@ export type Lesson = {
   order: number;
 };
 
-export async function getLessonsByUnit(unitId: string): Promise<Lesson[]> {
-  const response = await fetch(
-    `${API_BASE_URL}/units/${unitId}/lessons`,
-  );
-
-  if (!response.ok) {
-    throw new Error("Failed to load lessons");
-  }
-
-  return response.json();
+export function getLessonsByUnit(unitId: string): Promise<Lesson[]> {
+  return apiFetch(`/units/${unitId}/lessons`);
 }

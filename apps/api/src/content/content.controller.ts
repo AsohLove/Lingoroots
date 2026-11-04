@@ -11,8 +11,6 @@ import {
 import type { Request } from 'express';
 import {
   ApiBearerAuth,
-  ApiBody,
-  ApiOkResponse,
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';

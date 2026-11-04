@@ -1,4 +1,5 @@
-import { API_BASE_URL } from "../config/api";
+
+import { apiFetch } from './client';
 
 export type Unit = {
   id: string;
@@ -8,14 +9,6 @@ export type Unit = {
   order: number;
 };
 
-export async function getUnitsByLevel(levelId: string): Promise<Unit[]> {
-  const response = await fetch(
-    `${API_BASE_URL}/levels/${levelId}/units`,
-  );
-
-  if (!response.ok) {
-    throw new Error("Failed to load units");
-  }
-
-  return response.json();
+export function getUnitsByLevel(levelId: string): Promise<Unit[]> {
+  return apiFetch(`/levels/${levelId}/units`);
 }

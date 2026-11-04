@@ -1,4 +1,5 @@
-import { API_BASE_URL } from '../config/api';
+
+import { apiFetch } from './client';
 
 export type Level = {
   id: string;
@@ -17,30 +18,14 @@ export type Course = {
   levels: Level[];
 };
 
-export async function getCoursesByLanguage(
+export function getCoursesByLanguage(
   languageId: string,
 ): Promise<Course[]> {
-  const response = await fetch(
-    `${API_BASE_URL}/languages/${languageId}/courses`,
-  );
-
-  if (!response.ok) {
-    throw new Error('Failed to load courses');
-  }
-
-  return response.json();
+  return apiFetch(`/languages/${languageId}/courses`);
 }
 
-export async function getLevelsByCourse(
+export function getLevelsByCourse(
   courseId: string,
 ): Promise<Level[]> {
-  const response = await fetch(
-    `${API_BASE_URL}/courses/${courseId}/levels`,
-  );
-
-  if (!response.ok) {
-    throw new Error(`Failed to load levels (${response.status})`);
-  }
-
-  return response.json();
+  return apiFetch(`/courses/${courseId}/levels`);
 }

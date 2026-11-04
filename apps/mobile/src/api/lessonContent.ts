@@ -1,5 +1,4 @@
-
-import { API_BASE_URL } from "../config/api";
+import { apiFetch } from './client';
 
 export type VocabularyItem = {
   id: string;
@@ -28,6 +27,14 @@ export type ExampleSentence = {
   order: number;
 };
 
+export type LessonAudio = {
+  id: string;
+  lessonId: string;
+  title: string;
+  url: string;
+  order: number;
+};
+
 export type LessonContent = {
   id: string;
   unitId: string;
@@ -37,49 +44,14 @@ export type LessonContent = {
   vocabularyItems: VocabularyItem[];
   expressions: Expression[];
   exampleSentences: ExampleSentence[];
+  audio: LessonAudio[];
 };
-
-type Lesson = Omit<
-  LessonContent,
-  "vocabularyItems" | "expressions" | "exampleSentences"
->;
-
-async function fetchApi<T>(endpoint: string): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${endpoint}`);
-
-  if (!response.ok) {
-    throw new Error(
-      `Request failed (${response.status}): ${endpoint}`,
-    );
-  }
-
-  return response.json() as Promise<T>;
-}
 
 export async function getLessonContent(
   unitId: string,
   lessonId: string,
 ): Promise<LessonContent> {
-  // Fetch the lesson details and its published vocabulary.
-  const [lessons, vocabularyItems] = await Promise.all([
-    fetchApi<Lesson[]>(`/units/${unitId}/lessons`),
-    fetchApi<VocabularyItem[]>(
-      `/lessons/${lessonId}/vocabulary`,
-    ),
-  ]);
-
-  const lesson = lessons.find((item) => item.id === lessonId);
-
-  if (!lesson) {
-    throw new Error("Lesson not found in this unit");
-  }
-
-  return {
-    ...lesson,
-    vocabularyItems: vocabularyItems.sort(
-      (a, b) => a.order - b.order,
-    ),
-    expressions: [],
-    exampleSentences: [],
-  };
+  return apiFetch<LessonContent>(
+    `/units/${unitId}/lessons/${lessonId}/content`,
+  );
 }

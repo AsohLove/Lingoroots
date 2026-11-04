@@ -80,18 +80,18 @@ model Lesson {
 }
 
 model VocabularyItem {
-  id          String        @id @default(uuid())
-  lessonId    String
-  createdById String
-  term        String
-  meaning     String
-  explanation String?
-  order       Int
-  status      ContentStatus @default(DRAFT)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  versionGroupId String   @default(uuid())
-  version        Int      @default(1)
+  id             String        @id @default(uuid())
+  lessonId       String
+  createdById    String
+  term           String
+  meaning        String
+  explanation    String?
+  order          Int
+  status         ContentStatus @default(DRAFT)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  versionGroupId String        @default(uuid())
+  version        Int           @default(1)
   publishedAt    DateTime?
 
   lesson    Lesson @relation(fields: [lessonId], references: [id])
@@ -160,18 +160,35 @@ model Audio {
 }
 
 model User {
-  id           String   @id @default(uuid())
-  name         String
-  email        String   @unique
-  passwordHash String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id              String    @id @default(uuid())
+  name            String
+  email           String    @unique
+  passwordHash    String
+  emailVerifiedAt DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
-  sessions        Session[]
-  roles           UserRole[]
-  authorizations  LanguageAuthorization[]
-  vocabularyItems VocabularyItem[]
-  contentReviews  ContentReview[]
+  sessions          Session[]
+  roles             UserRole[]
+  authorizations    LanguageAuthorization[]
+  vocabularyItems   VocabularyItem[]
+  contentReviews    ContentReview[]
+  emailVerification EmailVerification?
+}
+
+model EmailVerification {
+  id         String   @id @default(uuid())
+  userId     String   @unique
+  codeHash   String
+  expiresAt  DateTime
+  attempts   Int      @default(0)
+  lastSentAt DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt])
 }
 
 model Session {

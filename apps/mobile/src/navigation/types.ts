@@ -1,3 +1,4 @@
+
 import type { NavigatorScreenParams } from '@react-navigation/native';
 
 export type TabParamList = {
@@ -8,6 +9,11 @@ export type TabParamList = {
 };
 
 export type RootStackParamList = {
+  PublicHome: undefined;
+  Login: undefined;
+  Register: undefined;
+  VerifyEmail: { email: string };
+
   MainTabs: NavigatorScreenParams<TabParamList> | undefined;
 
   Units: {

@@ -5,11 +5,12 @@ import { AuthController } from './auth.controller.js';
 import { AuthGuard } from './guards/auth.guard.js';
 import { RolesGuard } from './guards/roles.guard.js';
 import { AuthorizationService } from './authorization.service.js';
+import { EmailService } from '../email/email.service.js';
 
 @Module({
   imports: [PrismaModule],
   controllers: [AuthController],
-  providers: [AuthService, AuthGuard, RolesGuard, AuthorizationService],
-  exports: [AuthService, AuthGuard, RolesGuard, AuthorizationService],
+  providers: [AuthService, AuthGuard, RolesGuard, AuthorizationService, EmailService],
+  exports: [AuthService, AuthGuard, RolesGuard, AuthorizationService, EmailService],
 })
 export class AuthModule {}
