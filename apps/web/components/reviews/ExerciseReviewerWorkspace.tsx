@@ -1,6 +1,7 @@
-'use client';
+"use client";
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from "react";
+
 import {
   approveExercise,
   getExerciseReviewQueue,
@@ -8,50 +9,61 @@ import {
   requestExerciseChanges,
   startExerciseReview,
   type Exercise,
-} from '../../lib/exercises';
+} from "../../lib/exercises";
 
 export function ExerciseReviewWorkspace() {
   const [items, setItems] = useState<Exercise[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
 
-  const loadReviews = useCallback(async () => {
-    setError('');
+  const loadReviews = useCallback(async (isActive: () => boolean = () => true) => {
+
 
     try {
       const result = await getExerciseReviewQueue();
-      setItems(result);
+
+      if (isActive()) {
+        setItems(result);
+      }
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : 'Unable to load exercise reviews.',
-      );
+      if (isActive()) {
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Unable to load exercise reviews.",
+        );
+      }
     } finally {
-      setLoading(false);
+      if (isActive()) {
+        setLoading(false);
+      }
     }
   }, []);
 
-useEffect(() => {
+  useEffect(() => {
   let cancelled = false;
 
   getExerciseReviewQueue()
     .then((result) => {
-      if (!cancelled) setItems(result);
+      if (!cancelled) {
+        setItems(result);
+      }
     })
     .catch((err) => {
       if (!cancelled) {
         setError(
           err instanceof Error
             ? err.message
-            : 'Unable to load exercise reviews.',
+            : "Unable to load exercise reviews.",
         );
       }
     })
     .finally(() => {
-      if (!cancelled) setLoading(false);
+      if (!cancelled) {
+        setLoading(false);
+      }
     });
 
   return () => {
@@ -61,16 +73,19 @@ useEffect(() => {
 
   async function handleStart(id: string) {
     setBusyId(id);
-    setError('');
-    setMessage('');
+    setError("");
+    setMessage("");
 
     try {
       await startExerciseReview(id);
-      setMessage('Review started. You can now make a decision.');
+
+      setMessage("Review started. You can now make a decision.");
       await loadReviews();
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : 'Unable to start review.',
+        err instanceof Error
+          ? err.message
+          : "Unable to start review.",
       );
     } finally {
       setBusyId(null);
@@ -79,44 +94,60 @@ useEffect(() => {
 
   async function handleDecision(
     exercise: Exercise,
-    decision: 'approve' | 'changes' | 'reject',
+    decision: "approve" | "changes" | "reject",
   ) {
-    let comment: string | undefined;
+    let comment = "";
 
-    if (decision !== 'approve') {
-      comment = window.prompt(
-        decision === 'changes'
-          ? 'Explain what the contributor should change:'
-          : 'Explain why this exercise is being rejected:',
-      )?.trim();
+    if (decision !== "approve") {
+      const enteredComment = window
+        .prompt(
+          decision === "changes"
+            ? "Explain what the contributor should change:"
+            : "Explain why this exercise is being rejected:",
+        )
+        ?.trim();
 
-      if (!comment) return;
+      if (!enteredComment) {
+        return;
+      }
+
+      comment = enteredComment;
     }
 
     setBusyId(exercise.id);
-    setError('');
-    setMessage('');
+    setError("");
+    setMessage("");
 
     try {
-      if (decision === 'approve') {
+      if (decision === "approve") {
         await approveExercise(exercise.id);
-        setMessage('Exercise approved and published.');
-      } else if (decision === 'changes') {
-        await requestExerciseChanges(exercise.id, comment!);
-        setMessage('Changes requested from the contributor.');
+        setMessage("Exercise approved and published.");
+      } else if (decision === "changes") {
+        await requestExerciseChanges(exercise.id, comment);
+        setMessage("Changes requested from the contributor.");
       } else {
-        await rejectExercise(exercise.id, comment!);
-        setMessage('Exercise rejected.');
+        await rejectExercise(exercise.id, comment);
+        setMessage("Exercise rejected.");
       }
 
       await loadReviews();
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : 'Review decision failed.',
+        err instanceof Error
+          ? err.message
+          : "Review decision failed.",
       );
     } finally {
       setBusyId(null);
     }
+  }
+
+  async function handleRefresh() {
+    setLoading(true);
+    setError("");
+    setMessage("");
+
+    await loadReviews();
   }
 
   return (
@@ -126,6 +157,7 @@ useEffect(() => {
           <h1 className="text-2xl font-semibold text-slate-900">
             Exercise reviews
           </h1>
+
           <p className="mt-1 text-sm text-slate-500">
             Review submitted exercises before they become available to learners.
           </p>
@@ -133,11 +165,7 @@ useEffect(() => {
 
         <button
           type="button"
-          onClick={() => {
-            setLoading(true);
-            setError("");
-            void loadReviews();
-          }}
+          onClick={() => void handleRefresh()}
           disabled={loading}
           className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 disabled:opacity-50"
         >
@@ -172,6 +200,7 @@ useEffect(() => {
           <h2 className="font-semibold text-slate-900">
             No exercises awaiting review
           </h2>
+
           <p className="mt-2 text-sm text-slate-500">
             Submitted exercises will appear here.
           </p>
@@ -192,9 +221,11 @@ useEffect(() => {
                     <p className="text-xs font-medium uppercase tracking-wide text-indigo-600">
                       {exercise.type.replace("_", " ")}
                     </p>
+
                     <h2 className="mt-2 text-lg font-semibold text-slate-900">
                       {exercise.prompt}
                     </h2>
+
                     <p className="mt-1 text-sm text-slate-500">
                       Lesson: {exercise.lesson?.name ?? "Unknown lesson"}
                       {" · "}
@@ -219,6 +250,7 @@ useEffect(() => {
                         }`}
                       >
                         {option.text}
+
                         {option.isCorrect && (
                           <span className="ml-2 text-xs font-semibold">
                             Correct answer
@@ -234,10 +266,11 @@ useEffect(() => {
                     <p className="text-xs font-semibold uppercase text-slate-500">
                       Accepted answers
                     </p>
+
                     <p className="mt-2 text-sm text-slate-700">
                       {exercise.acceptedAnswers
                         ?.map((answer) => answer.value)
-                        .join(", ")}
+                        .join(", ") || "No accepted answers provided."}
                     </p>
                   </div>
                 )}
@@ -253,7 +286,7 @@ useEffect(() => {
                     <button
                       type="button"
                       onClick={() => void handleStart(exercise.id)}
-                      disabled={busy}
+                      disabled={busy || busyId !== null}
                       className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
                     >
                       {busy ? "Starting..." : "Start review"}
@@ -264,8 +297,10 @@ useEffect(() => {
                     <>
                       <button
                         type="button"
-                        onClick={() => void handleDecision(exercise, "approve")}
-                        disabled={busy}
+                        onClick={() =>
+                          void handleDecision(exercise, "approve")
+                        }
+                        disabled={busy || busyId !== null}
                         className="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
                       >
                         {busy ? "Saving..." : "Approve & publish"}
@@ -273,8 +308,10 @@ useEffect(() => {
 
                       <button
                         type="button"
-                        onClick={() => void handleDecision(exercise, "changes")}
-                        disabled={busy}
+                        onClick={() =>
+                          void handleDecision(exercise, "changes")
+                        }
+                        disabled={busy || busyId !== null}
                         className="rounded-lg border border-amber-300 px-4 py-2 text-sm font-medium text-amber-800 disabled:opacity-50"
                       >
                         Request changes
@@ -282,8 +319,10 @@ useEffect(() => {
 
                       <button
                         type="button"
-                        onClick={() => void handleDecision(exercise, "reject")}
-                        disabled={busy}
+                        onClick={() =>
+                          void handleDecision(exercise, "reject")
+                        }
+                        disabled={busy || busyId !== null}
                         className="rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-700 disabled:opacity-50"
                       >
                         Reject

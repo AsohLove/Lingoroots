@@ -1,16 +1,31 @@
-import NavItem from './NavItem';
+import type { Role } from "../../types/auth";
+import NavItem from "./NavItem";
 
 type DashboardSidebarProps = {
   activePage: string;
   onNavigate: (page: string) => void;
   onLogout: () => void;
+  roles: Role[];
 };
 
 export default function DashboardSidebar({
   activePage,
   onNavigate,
   onLogout,
+  roles,
 }: DashboardSidebarProps) {
+  const isAdministrator = roles.includes("ADMINISTRATOR");
+  const canContribute =
+    isAdministrator || roles.includes("CONTRIBUTOR");
+  const canReview = isAdministrator || roles.includes("REVIEWER");
+
+  const navigation = [
+    { label: "Dashboard", visible: true },
+    { label: "Content", visible: canContribute },
+    { label: "Submissions", visible: canContribute },
+    { label: "Reviews", visible: canReview },
+  ].filter((item) => item.visible);
+
   return (
     <aside className="flex w-64 flex-col bg-slate-950 text-white">
       <div className="border-b border-slate-800 px-6 py-6">
@@ -24,53 +39,14 @@ export default function DashboardSidebar({
         </p>
 
         <div className="space-y-1">
-          <NavItem
-            label="Dashboard"
-            active={activePage === 'Dashboard'}
-            onClick={() => onNavigate('Dashboard')}
-          />
-
-          <NavItem
-            label="Content"
-            active={activePage === 'Content'}
-            onClick={() => onNavigate('Content')}
-          />
-
-          <NavItem
-            label="Languages"
-            active={activePage === 'Languages'}
-            onClick={() => onNavigate('Languages')}
-          />
-
-          <NavItem
-            label="Courses"
-            active={activePage === 'Courses'}
-            onClick={() => onNavigate('Courses')}
-          />
-
-          <NavItem
-            label="Lessons"
-            active={activePage === 'Lessons'}
-            onClick={() => onNavigate('Lessons')}
-          />
-
-          <NavItem
-            label="Reviews"
-            active={activePage === 'Reviews'}
-            onClick={() => onNavigate('Reviews')}
-          />
-
-          <NavItem
-            label="Submissions"
-            active={activePage === 'Submissions'}
-            onClick={() => onNavigate('Submissions')}
-          />
-
-          <NavItem
-            label="Settings"
-            active={activePage === 'Settings'}
-            onClick={() => onNavigate('Settings')}
-          />
+          {navigation.map((item) => (
+            <NavItem
+              key={item.label}
+              label={item.label}
+              active={activePage === item.label}
+              onClick={() => onNavigate(item.label)}
+            />
+          ))}
         </div>
       </nav>
 

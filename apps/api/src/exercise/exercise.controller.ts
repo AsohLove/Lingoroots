@@ -62,10 +62,7 @@ export class ExerciseController {
   }
 
   @Post('exercises/:exerciseId/submit')
-  submit(
-    @Param('exerciseId') exerciseId: string,
-    @Req() request: Request,
-  ) {
+  submit(@Param('exerciseId') exerciseId: string, @Req() request: Request) {
     return this.exerciseService.submit(
       exerciseId,
       request.user as AuthenticatedUser,
@@ -152,6 +149,13 @@ export class ExerciseController {
       exerciseId,
       'reject',
       dto.comment,
+      request.user as AuthenticatedUser,
+    );
+  }
+
+  @Get('me/exercises')
+  getMyExercises(@Req() request: Request) {
+    return this.exerciseService.getMyExercises(
       request.user as AuthenticatedUser,
     );
   }

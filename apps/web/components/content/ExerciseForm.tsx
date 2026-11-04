@@ -1,15 +1,20 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+
 import {
   createExercise,
   submitExercise,
+  updateExercise,
+  type ContributorExercise,
   type Exercise,
   type ExerciseType,
 } from "../../lib/exercises";
 
 type ExerciseFormProps = {
   lessonId: string;
+  initialExercise?: ContributorExercise;
+  onComplete?: () => void | Promise<void>;
 };
 
 type EditableOption = {
@@ -23,12 +28,29 @@ const emptyOptions: EditableOption[] = [
   { text: "", isCorrect: false },
 ];
 
-export function ExerciseForm({ lessonId }: ExerciseFormProps) {
-  const [type, setType] = useState<ExerciseType>("MULTIPLE_CHOICE");
-  const [prompt, setPrompt] = useState("");
-  const [explanation, setExplanation] = useState("");
-  const [options, setOptions] = useState<EditableOption[]>(emptyOptions);
-  const [acceptedAnswers, setAcceptedAnswers] = useState("");
+export function ExerciseForm({
+  lessonId,
+  initialExercise,
+  onComplete,
+}: ExerciseFormProps) {
+  const [type, setType] = useState<ExerciseType>(
+    initialExercise?.type ?? "MULTIPLE_CHOICE",
+  );
+  const [prompt, setPrompt] = useState(initialExercise?.prompt ?? "");
+  const [explanation, setExplanation] = useState(
+    initialExercise?.explanation ?? "",
+  );
+  const [options, setOptions] = useState<EditableOption[]>(
+    initialExercise?.options.map((option) => ({
+      text: option.text,
+      isCorrect: option.isCorrect ?? false,
+    })) ?? emptyOptions,
+  );
+  const [acceptedAnswers, setAcceptedAnswers] = useState(
+    initialExercise?.acceptedAnswers
+      ?.map((answer) => answer.value)
+      .join("\n") ?? "",
+  );
 
   const [exercise, setExercise] = useState<Exercise | null>(null);
   const [saving, setSaving] = useState(false);
@@ -37,6 +59,7 @@ export function ExerciseForm({ lessonId }: ExerciseFormProps) {
   const [message, setMessage] = useState("");
 
   function resetForm() {
+    setType("MULTIPLE_CHOICE");
     setPrompt("");
     setExplanation("");
     setOptions(emptyOptions);
@@ -54,10 +77,7 @@ export function ExerciseForm({ lessonId }: ExerciseFormProps) {
     setOptions((current) =>
       current.map((option, optionIndex) => {
         if (field === "isCorrect") {
-          return {
-            ...option,
-            isCorrect: optionIndex === index,
-          };
+          return { ...option, isCorrect: optionIndex === index };
         }
 
         return optionIndex === index
@@ -68,13 +88,18 @@ export function ExerciseForm({ lessonId }: ExerciseFormProps) {
   }
 
   function addOption() {
-    if (options.length >= 6) return;
-
-    setOptions((current) => [...current, { text: "", isCorrect: false }]);
+    if (options.length < 6) {
+      setOptions((current) => [
+        ...current,
+        { text: "", isCorrect: false },
+      ]);
+    }
   }
 
   function removeOption(index: number) {
-    if (options.length <= 2) return;
+    if (options.length <= 2) {
+      return;
+    }
 
     setOptions((current) => {
       const remaining = current.filter(
@@ -94,6 +119,7 @@ export function ExerciseForm({ lessonId }: ExerciseFormProps) {
 
   async function handleSave(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
     setError("");
     setMessage("");
 
@@ -102,17 +128,25 @@ export function ExerciseForm({ lessonId }: ExerciseFormProps) {
       return;
     }
 
+    const explanationValue = initialExercise
+      ? explanation.trim()
+      : explanation.trim() || undefined;
+
     let input;
 
     if (type === "MULTIPLE_CHOICE") {
-      const usableOptions = options.filter((option) => option.text.trim());
+      const usableOptions = options.filter((option) =>
+        option.text.trim(),
+      );
 
       if (usableOptions.length < 2) {
         setError("Add at least two non-empty answer options.");
         return;
       }
 
-      if (usableOptions.filter((option) => option.isCorrect).length !== 1) {
+      if (
+        usableOptions.filter((option) => option.isCorrect).length !== 1
+      ) {
         setError("Mark exactly one answer as correct.");
         return;
       }
@@ -120,19 +154,24 @@ export function ExerciseForm({ lessonId }: ExerciseFormProps) {
       input = {
         type,
         prompt: prompt.trim(),
-        explanation: explanation.trim() || undefined,
-        order: 0,
+        explanation: explanationValue,
+        order: initialExercise?.order ?? 0,
         options: usableOptions.map((option, index) => ({
           text: option.text.trim(),
           order: index,
           isCorrect: option.isCorrect,
         })),
+        acceptedAnswers: [],
       };
     } else {
-      const answers = acceptedAnswers
-        .split("\n")
-        .map((answer) => answer.trim())
-        .filter(Boolean);
+      const answers = [
+        ...new Set(
+          acceptedAnswers
+            .split("\n")
+            .map((answer) => answer.trim())
+            .filter(Boolean),
+        ),
+      ];
 
       if (answers.length === 0) {
         setError("Enter at least one accepted answer.");
@@ -142,21 +181,34 @@ export function ExerciseForm({ lessonId }: ExerciseFormProps) {
       input = {
         type,
         prompt: prompt.trim(),
-        explanation: explanation.trim() || undefined,
-        order: 0,
-        acceptedAnswers: [...new Set(answers)],
+        explanation: explanationValue,
+        order: initialExercise?.order ?? 0,
+        options: [],
+        acceptedAnswers: answers,
       };
     }
 
     setSaving(true);
 
     try {
-      const created = await createExercise(lessonId, input);
-      setExercise(created);
-      setMessage("Exercise saved as a draft. Review it before submitting.");
+      const saved = initialExercise
+        ? await updateExercise(initialExercise.id, input)
+        : await createExercise(lessonId, input);
+
+      setExercise(saved);
+
+      setMessage(
+        initialExercise
+          ? "Changes saved. Review the updated exercise before resubmitting."
+          : "Exercise saved as a draft. Review it before submitting.",
+      );
+
+      await onComplete?.();
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Could not save the exercise.",
+        err instanceof Error
+          ? err.message
+          : "Could not save the exercise.",
       );
     } finally {
       setSaving(false);
@@ -164,7 +216,9 @@ export function ExerciseForm({ lessonId }: ExerciseFormProps) {
   }
 
   async function handleSubmit() {
-    if (!exercise) return;
+    if (!exercise) {
+      return;
+    }
 
     setSubmitting(true);
     setError("");
@@ -172,66 +226,101 @@ export function ExerciseForm({ lessonId }: ExerciseFormProps) {
 
     try {
       const updated = await submitExercise(exercise.id);
+
       setExercise(updated);
       setMessage("Exercise submitted successfully for review.");
+
+      await onComplete?.();
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Could not submit the exercise.",
+        err instanceof Error
+          ? err.message
+          : "Could not submit the exercise.",
       );
     } finally {
       setSubmitting(false);
     }
   }
 
+  const currentExercise = exercise ?? initialExercise;
+
   const isDraft =
-    exercise?.status === "DRAFT" || exercise?.status === "CHANGES_REQUESTED";
+    currentExercise?.status === "DRAFT" ||
+    currentExercise?.status === "CHANGES_REQUESTED";
 
   return (
     <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
       <div className="mb-6">
         <h2 className="text-lg font-semibold text-slate-900">
-          Create an exercise
+          {initialExercise ? "Edit exercise" : "Create an exercise"}
         </h2>
+
         <p className="mt-1 text-sm text-slate-500">
-          Add a practice question to the selected lesson.
+          {initialExercise
+            ? "Update the exercise using the review feedback."
+            : "Add a practice question to the selected lesson."}
         </p>
       </div>
 
-      {exercise ? (
+      {currentExercise && exercise ? (
         <div className="space-y-4">
           <div className="rounded-lg border border-slate-200 p-4">
             <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
               Saved exercise
             </p>
+
             <h3 className="mt-2 font-semibold text-slate-900">
               {exercise.prompt}
             </h3>
+
             <p className="mt-2 text-sm text-slate-600">
-              Type: {exercise.type.replace("_", " ")}
+              Type: {exercise.type.replaceAll("_", " ")}
             </p>
+
             <p className="mt-2 text-sm text-slate-600">
-              Status: <strong>{exercise.status}</strong>
+              Status: <strong>{exercise.status.replaceAll("_", " ")}</strong>
             </p>
           </div>
 
           {isDraft && (
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={submitting}
-              className="rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
-            >
-              {submitting ? "Submitting..." : "Submit for review"}
-            </button>
+            <div className="flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={() => setExercise(null)}
+                disabled={saving || submitting}
+                className="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 disabled:opacity-50"
+              >
+                Continue editing
+              </button>
+
+              <button
+                type="button"
+                onClick={() => void handleSubmit()}
+                disabled={submitting || saving}
+                className="rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+              >
+                {submitting ? "Submitting..." : "Submit for review"}
+              </button>
+            </div>
           )}
 
-          <button
-            type="button"
-            onClick={resetForm}
-            className="ml-2 rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700"
-          >
-            Create another exercise
-          </button>
+          {!isDraft && (
+            <p className="text-sm text-slate-600">
+              This exercise has been submitted. You can track its status in
+              My Submissions.
+            </p>
+          )}
+
+          {!initialExercise && (
+            <button
+              type="button"
+              onClick={resetForm}
+              disabled={saving || submitting}
+              className="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 disabled:opacity-50"
+            >
+              Create another exercise
+            </button>
+          )}
         </div>
       ) : (
         <form onSubmit={handleSave} className="space-y-5">
@@ -242,10 +331,13 @@ export function ExerciseForm({ lessonId }: ExerciseFormProps) {
             >
               Exercise type
             </label>
+
             <select
               id="exercise-type"
               value={type}
-              onChange={(event) => setType(event.target.value as ExerciseType)}
+              onChange={(event) =>
+                setType(event.target.value as ExerciseType)
+              }
               className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900"
             >
               <option value="MULTIPLE_CHOICE">Multiple choice</option>
@@ -260,6 +352,7 @@ export function ExerciseForm({ lessonId }: ExerciseFormProps) {
             >
               Question
             </label>
+
             <textarea
               id="exercise-prompt"
               value={prompt}
@@ -277,6 +370,7 @@ export function ExerciseForm({ lessonId }: ExerciseFormProps) {
                 <h3 className="text-sm font-medium text-slate-700">
                   Answer options
                 </h3>
+
                 <p className="mt-1 text-xs text-slate-500">
                   Select the radio button beside the one correct answer.
                 </p>
@@ -288,19 +382,22 @@ export function ExerciseForm({ lessonId }: ExerciseFormProps) {
                     type="radio"
                     name="correct-option"
                     checked={option.isCorrect}
-                    onChange={() => updateOption(index, "isCorrect", true)}
+                    onChange={() =>
+                      updateOption(index, "isCorrect", true)
+                    }
                     aria-label={`Mark option ${index + 1} as correct`}
                     className="h-4 w-4 accent-indigo-600"
                   />
+
                   <input
                     value={option.text}
                     onChange={(event) =>
                       updateOption(index, "text", event.target.value)
                     }
-                    required
                     placeholder={`Option ${index + 1}`}
                     className="min-w-0 flex-1 rounded-lg border border-slate-300 px-3 py-2.5 text-sm"
                   />
+
                   {options.length > 2 && (
                     <button
                       type="button"
@@ -331,18 +428,21 @@ export function ExerciseForm({ lessonId }: ExerciseFormProps) {
               >
                 Accepted answers
               </label>
+
               <textarea
                 id="accepted-answers"
                 value={acceptedAnswers}
-                onChange={(event) => setAcceptedAnswers(event.target.value)}
+                onChange={(event) =>
+                  setAcceptedAnswers(event.target.value)
+                }
                 rows={4}
-                required
                 placeholder={"Mbolo\nMbolo!"}
                 className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm"
               />
+
               <p className="mt-1 text-xs text-slate-500">
-                Enter one accepted answer per line. Accents and diacritics are
-                preserved.
+                Enter one accepted answer per line. Accents and diacritics
+                are preserved.
               </p>
             </div>
           )}
@@ -354,6 +454,7 @@ export function ExerciseForm({ lessonId }: ExerciseFormProps) {
             >
               Explanation (optional)
             </label>
+
             <textarea
               id="exercise-explanation"
               value={explanation}
@@ -366,10 +467,14 @@ export function ExerciseForm({ lessonId }: ExerciseFormProps) {
 
           <button
             type="submit"
-            disabled={saving}
+            disabled={saving || submitting}
             className="rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-medium text-white disabled:opacity-50"
           >
-            {saving ? "Saving..." : "Save draft"}
+            {saving
+              ? "Saving..."
+              : initialExercise
+                ? "Save changes"
+                : "Save draft"}
           </button>
         </form>
       )}
@@ -379,6 +484,7 @@ export function ExerciseForm({ lessonId }: ExerciseFormProps) {
           {message}
         </p>
       )}
+
       {error && (
         <p role="alert" className="mt-4 text-sm text-red-700">
           {error}

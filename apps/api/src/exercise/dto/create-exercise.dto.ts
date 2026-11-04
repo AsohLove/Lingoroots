@@ -9,6 +9,7 @@ import {
   IsString,
   Min,
   MinLength,
+  ValidateIf,
   ValidateNested,
 } from 'class-validator';
 
@@ -53,6 +54,7 @@ export class CreateExerciseDto {
   @IsOptional()
   @IsArray()
   @ArrayMinSize(1)
+  @ValidateIf((o) => o.type === 'TEXT_INPUT')
   @IsString({ each: true })
   acceptedAnswers?: string[];
 }

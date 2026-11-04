@@ -5,10 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
-import {
-  ContentStatus,
-  ExerciseType,
-} from '../generated/prisma/client.js';
+import { ContentStatus, ExerciseType } from '../generated/prisma/client.js';
 import type { AuthenticatedUser } from '../auth/types/authenticated-user.js';
 import { AuthorizationService } from '../auth/authorization.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -25,14 +22,10 @@ export class ExerciseService {
   ) {}
 
   private normalizeAnswer(value: string): string {
-    return value
-      .normalize('NFC')
-      .trim()
-      .replace(/\s+/g, ' ')
-      .toLowerCase();
+    return value.normalize('NFC').trim().replace(/\s+/g, ' ').toLowerCase();
   }
 
-    private requireReviewer(user: AuthenticatedUser) {
+  private requireReviewer(user: AuthenticatedUser) {
     if (
       !user.roles.includes('REVIEWER') &&
       !user.roles.includes('ADMINISTRATOR')
@@ -119,10 +112,7 @@ export class ExerciseService {
 
     const languageId = await this.getLessonLanguageId(lessonId);
 
-    await this.authorizationService.requireLanguageAccess(
-      user.id,
-      languageId,
-    );
+    await this.authorizationService.requireLanguageAccess(user.id, languageId);
 
     const count = await this.prisma.exercise.count({
       where: { lessonId },
@@ -208,13 +198,15 @@ export class ExerciseService {
     );
 
     const type = dto.type ?? exercise.type;
-    const options = dto.options ??
+    const options =
+      dto.options ??
       exercise.options.map((option) => ({
         text: option.text,
         isCorrect: option.isCorrect,
         order: option.order,
       }));
-    const acceptedAnswers = dto.acceptedAnswers ??
+    const acceptedAnswers =
+      dto.acceptedAnswers ??
       exercise.acceptedAnswers.map((answer) => answer.value);
 
     this.validateExerciseContent({
@@ -390,10 +382,7 @@ export class ExerciseService {
         lessonId,
         status: ContentStatus.PUBLISHED,
       },
-      orderBy: [
-        { order: 'asc' },
-        { version: 'desc' },
-      ],
+      orderBy: [{ order: 'asc' }, { version: 'desc' }],
       include: {
         options: {
           orderBy: { order: 'asc' },
@@ -531,9 +520,7 @@ export class ExerciseService {
         }
       }
 
-      const exerciseIds = [...latestExercises.values()].map(
-        (item) => item.id,
-      );
+      const exerciseIds = [...latestExercises.values()].map((item) => item.id);
 
       if (exerciseIds.length > 0) {
         const correctAttempts = await tx.exerciseAttempt.findMany({
@@ -673,10 +660,7 @@ export class ExerciseService {
       },
     });
 
-    if (
-      exercise.status !== ContentStatus.UNDER_REVIEW ||
-      !activeReview
-    ) {
+    if (exercise.status !== ContentStatus.UNDER_REVIEW || !activeReview) {
       throw new ForbiddenException(
         'You do not own the active review for this exercise',
       );
@@ -694,8 +678,7 @@ export class ExerciseService {
         where: { id: exerciseId },
         data: {
           status,
-          publishedAt:
-            decision === 'approve' ? new Date() : null,
+          publishedAt: decision === 'approve' ? new Date() : null,
         },
       });
 
@@ -710,5 +693,40 @@ export class ExerciseService {
       return updated;
     });
   }
-  
+
+  async getMyExercises(user: AuthenticatedUser) {
+    this.authorizationService.requireRole(user, 'CONTRIBUTOR');
+
+    return this.prisma.exercise.findMany({
+      where: { createdById: user.id },
+      include: {
+        options: {
+          orderBy: { order: 'asc' },
+        },
+        acceptedAnswers: true,
+        lesson: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        reviews: {
+          select: {
+            id: true,
+            status: true,
+            comment: true,
+            createdAt: true,
+            reviewer: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+      orderBy: { updatedAt: 'desc' },
+    });
+  }
 }

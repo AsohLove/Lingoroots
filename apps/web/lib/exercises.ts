@@ -102,3 +102,39 @@ export function rejectExercise(
     { method: 'POST', body: { comment } },
   );
 }
+
+export type ExerciseReview = {
+  id: string;
+  status: string;
+  comment: string | null;
+  createdAt: string;
+  reviewer: {
+    id: string;
+    name: string;
+  };
+};
+
+export type ContributorExercise = Exercise & {
+  acceptedAnswers: ExerciseAnswer[];
+  lesson: {
+    id: string;
+    name: string;
+  };
+  reviews: ExerciseReview[];
+};
+
+export type UpdateExerciseInput = CreateExerciseInput;
+
+export async function getMyExercises() {
+  return api<ContributorExercise[]>('/me/exercises');
+}
+
+export async function updateExercise(
+  exerciseId: string,
+  input: UpdateExerciseInput,
+) {
+  return api<ContributorExercise>(`/exercises/${exerciseId}`, {
+    method: 'PATCH',
+    body: input,
+  });
+}
