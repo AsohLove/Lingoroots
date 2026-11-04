@@ -11,6 +11,8 @@ import { HealthModule } from './health/health.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { ContentModule } from './content/content.module.js';
 import { LevelModule } from './level/level.module.js';
+import { ProgressModule } from './progress/progress.module.js';
+import { ExerciseModule } from './exercise/exercise.module.js';
 
 
 @Module({
@@ -24,6 +26,8 @@ import { LevelModule } from './level/level.module.js';
             AuthModule,
             ContentModule,
             LevelModule,
+            ProgressModule,
+            ExerciseModule,
           ],
   controllers: [AppController],
   providers: [AppService],

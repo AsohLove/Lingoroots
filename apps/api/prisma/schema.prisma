@@ -77,6 +77,8 @@ model Lesson {
   expressions      Expression[]
   exampleSentences ExampleSentence[]
   audio            Audio[]
+  exercises        Exercise[]
+  progress         LessonProgress[]
 }
 
 model VocabularyItem {
@@ -174,6 +176,10 @@ model User {
   vocabularyItems   VocabularyItem[]
   contentReviews    ContentReview[]
   emailVerification EmailVerification?
+  exercisesCreated  Exercise[]
+  exerciseReviews   ExerciseReview[]
+  exerciseAttempts  ExerciseAttempt[]
+  learningProgress  LessonProgress[]
 }
 
 model EmailVerification {
@@ -220,6 +226,16 @@ enum ContentStatus {
   REJECTED
 }
 
+enum ExerciseType {
+  MULTIPLE_CHOICE
+  TEXT_INPUT
+}
+
+enum LessonProgressStatus {
+  IN_PROGRESS
+  COMPLETED
+}
+
 model UserRole {
   id        String   @id @default(uuid())
   userId    String
@@ -262,4 +278,108 @@ model LanguageAuthorization {
   @@index([userId])
   @@index([languageId])
   @@index([variantId])
+}
+
+model Exercise {
+  id             String        @id @default(uuid())
+  lessonId       String
+  createdById    String
+  type           ExerciseType
+  prompt         String
+  explanation    String?
+  order          Int
+  status         ContentStatus @default(DRAFT)
+  versionGroupId String        @default(uuid())
+  version        Int           @default(1)
+  publishedAt    DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  lesson          Lesson            @relation(fields: [lessonId], references: [id])
+  createdBy       User              @relation(fields: [createdById], references: [id])
+  options         ExerciseOption[]
+  acceptedAnswers ExerciseAnswer[]
+  attempts        ExerciseAttempt[]
+  reviews         ExerciseReview[]
+
+  @@unique([versionGroupId, version])
+  @@index([lessonId])
+  @@index([createdById])
+  @@index([status])
+  @@index([versionGroupId])
+}
+
+model ExerciseOption {
+  id         String   @id @default(uuid())
+  exerciseId String
+  text       String
+  isCorrect  Boolean  @default(false)
+  order      Int
+  createdAt  DateTime @default(now())
+
+  exercise Exercise          @relation(fields: [exerciseId], references: [id])
+  attempts ExerciseAttempt[]
+
+  @@index([exerciseId])
+}
+
+model ExerciseAnswer {
+  id              String   @id @default(uuid())
+  exerciseId      String
+  value           String
+  normalizedValue String
+  createdAt       DateTime @default(now())
+
+  exercise Exercise @relation(fields: [exerciseId], references: [id])
+
+  @@unique([exerciseId, normalizedValue])
+  @@index([exerciseId])
+}
+
+model ExerciseReview {
+  id         String        @id @default(uuid())
+  exerciseId String
+  reviewerId String
+  status     ContentStatus
+  comment    String?
+  createdAt  DateTime      @default(now())
+
+  exercise Exercise @relation(fields: [exerciseId], references: [id])
+  reviewer User     @relation(fields: [reviewerId], references: [id])
+
+  @@index([exerciseId])
+  @@index([reviewerId])
+}
+
+model ExerciseAttempt {
+  id               String   @id @default(uuid())
+  userId           String
+  exerciseId       String
+  selectedOptionId String?
+  submittedText    String?
+  isCorrect        Boolean
+  createdAt        DateTime @default(now())
+
+  user           User            @relation(fields: [userId], references: [id])
+  exercise       Exercise        @relation(fields: [exerciseId], references: [id])
+  selectedOption ExerciseOption? @relation(fields: [selectedOptionId], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([exerciseId, userId])
+}
+
+model LessonProgress {
+  id          String               @id @default(uuid())
+  userId      String
+  lessonId    String
+  status      LessonProgressStatus @default(IN_PROGRESS)
+  startedAt   DateTime             @default(now())
+  completedAt DateTime?
+  updatedAt   DateTime             @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id])
+  lesson Lesson @relation(fields: [lessonId], references: [id])
+
+  @@unique([userId, lessonId])
+  @@index([userId, status])
 }

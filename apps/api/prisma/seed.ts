@@ -30,6 +30,7 @@ async function main() {
         name: 'LingoRoots Contributor',
         email: 'contributor@lingoroots.local',
         passwordHash: contributorPasswordHash,
+        emailVerifiedAt: new Date(),
       },
     });
   } else {
@@ -39,6 +40,7 @@ async function main() {
       },
       data: {
         passwordHash: contributorPasswordHash,
+        emailVerifiedAt: new Date(),
       },
     });
   }
@@ -320,6 +322,7 @@ async function main() {
         name: 'LingoRoots Reviewer',
         email: 'reviewer@lingoroots.local',
         passwordHash: reviewerPasswordHash,
+        emailVerifiedAt: new Date(),
       },
     });
   } else {
@@ -329,6 +332,7 @@ async function main() {
       },
       data: {
         passwordHash: reviewerPasswordHash,
+        emailVerifiedAt: new Date(),
       },
     });
   }
@@ -346,6 +350,85 @@ async function main() {
       role: 'REVIEWER',
     },
   });
+
+    // ------------------------------------------------------------
+  // Development/demo exercises
+  // ------------------------------------------------------------
+
+  type SeedExercise = {
+  type: 'MULTIPLE_CHOICE' | 'TEXT_INPUT';
+  prompt: string;
+  explanation: string;
+  order: number;
+  options?: {
+    text: string;
+    isCorrect: boolean;
+    order: number;
+  }[];
+  acceptedAnswers?: string[];
+};
+
+const exercises: SeedExercise[] = [
+  {
+    type: 'MULTIPLE_CHOICE',
+    prompt: 'What does "Mbolo" mean?',
+    explanation: 'Mbolo is used as a greeting meaning Hello.',
+    order: 1,
+    options: [
+      { text: 'Hello', isCorrect: true, order: 1 },
+      { text: 'Goodbye', isCorrect: false, order: 2 },
+      { text: 'Thank you', isCorrect: false, order: 3 },
+    ],
+  },
+  {
+    type: 'TEXT_INPUT',
+    prompt: 'How do you say "Hello" in Ewondo?',
+    explanation: 'Mbolo is a common Ewondo greeting.',
+    order: 2,
+    acceptedAnswers: ['Mbolo'],
+  },
+];
+
+  for (const exercise of exercises) {
+    const existingExercise = await prisma.exercise.findFirst({
+      where: {
+        lessonId: lesson.id,
+        prompt: exercise.prompt,
+      },
+    });
+
+    if (!existingExercise) {
+      await prisma.exercise.create({
+        data: {
+          lessonId: lesson.id,
+          createdById: contributor.id,
+          type: exercise.type,
+          prompt: exercise.prompt,
+          explanation: exercise.explanation,
+          order: exercise.order,
+          status: 'PUBLISHED',
+          publishedAt: new Date(),
+          options: {
+            create: exercise.type === 'MULTIPLE_CHOICE'
+              ? exercise.options
+              : [],
+          },
+          acceptedAnswers: {
+            create: exercise.type === 'TEXT_INPUT'
+              ? (exercise.acceptedAnswers ?? []).map((value) => ({
+                  value,
+                  normalizedValue: value
+                    .normalize('NFC')
+                    .trim()
+                    .replace(/\s+/g, ' ')
+                    .toLowerCase(),
+                }))
+              : [],
+          },
+        },
+      });
+    }
+  }
 
 
 

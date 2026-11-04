@@ -17,9 +17,8 @@ export function ReviewWorkspace() {
   const [error, setError] = useState("");
 
   async function loadReviews() {
-    setLoading(true);
     setError("");
-
+    
     try {
       const result = await getSubmittedVocabulary();
       setItems(result);
@@ -35,8 +34,29 @@ export function ReviewWorkspace() {
   }
 
   useEffect(() => {
-    void loadReviews();
-  }, []);
+  let cancelled = false;
+
+  getSubmittedVocabulary()
+    .then((result) => {
+      if (!cancelled) setItems(result);
+    })
+    .catch((err) => {
+      if (!cancelled) {
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Failed to load submitted content.",
+        );
+      }
+    })
+    .finally(() => {
+      if (!cancelled) setLoading(false);
+    });
+
+  return () => {
+    cancelled = true;
+  };
+}, []);
 
   async function handleStartReview(vocabularyId: string) {
     try {
@@ -99,15 +119,29 @@ export function ReviewWorkspace() {
 
   return (
     <section className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-slate-900">
-          Content Reviews
-        </h1>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold text-slate-900">
+            Content Reviews
+          </h1>
 
-        <p className="mt-1 text-sm text-slate-500">
-          Review submitted learning content and manage reviews you have already
-          started.
-        </p>
+          <p className="mt-1 text-sm text-slate-500">
+            Review submitted learning content and manage reviews you have
+            already started.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            setLoading(true);
+            void loadReviews();
+          }}
+          disabled={loading}
+          className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 disabled:opacity-50"
+        >
+          Refresh
+        </button>
       </div>
 
       {error && (

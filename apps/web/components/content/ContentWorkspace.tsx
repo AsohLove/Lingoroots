@@ -15,6 +15,8 @@ import LessonSelector from './LessonSelector';
 import UnitSelector from './UnitSelector';
 import { VocabularyForm } from './VocabularyForm';
 
+import { ExerciseForm } from './ExerciseForm';
+
 type Course = {
   id: string;
   name: string;
@@ -325,7 +327,11 @@ export default function ContentWorkspace() {
       </section>
 
       {lessonId && (
-        <VocabularyForm lessonId={lessonId} />
+        <div className="space-y-6">
+          <VocabularyForm lessonId={lessonId} />
+
+          <ExerciseForm lessonId={lessonId} />
+        </div>
       )}
     </div>
   );

@@ -19,6 +19,8 @@ import ContentWorkspace from "../content/ContentWorkspace";
 
 import { ReviewWorkspace } from "../reviews/ReviewWorkspace";
 
+import { ExerciseReviewWorkspace } from "../reviews/ExerciseReviewerWorkspace";
+
 type DashboardProps = {
   user: AuthenticatedUser;
   onLogout: () => void;
@@ -82,7 +84,14 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
         <main className="flex-1 p-8">
           {activePage === "Content" && <ContentWorkspace />}
 
-          {activePage === "Reviews" && <ReviewWorkspace />}
+          {activePage === "Reviews" && (
+            <div className="space-y-10">
+              <ReviewWorkspace />
+              <div className="border-t border-slate-200 pt-8">
+                <ExerciseReviewWorkspace />
+              </div>
+            </div>
+          )}
 
           {activePage === "Dashboard" && (
             <>
