@@ -1,0 +1,63 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+
+language: "en-US"
+early_access: false
+
+tone_instructions: "Be concise and technical. Prioritise correctness, security, data integrity, and maintainability over stylistic preferences."
+
+reviews:
+  profile: "chill"
+  request_changes_workflow: false
+  high_level_summary: true
+  review_status: true
+  collapse_walkthrough: false
+
+  auto_review:
+    enabled: true
+    drafts: false
+    auto_incremental_review: true
+
+  path_instructions:
+    - path: "apps/api/src/**"
+      instructions: |
+        Review this NestJS API for correctness, security, maintainability,
+        and consistency with the existing modular monolith.
+
+        Pay particular attention to:
+        - Server-side authentication, authorization, roles, and ownership.
+        - DTO validation and malformed or unexpected input.
+        - Prisma queries, transaction boundaries, and data integrity.
+        - Error handling and unintended information disclosure.
+        - API contract compatibility with the mobile and web applications.
+        - Avoiding unnecessary schema changes and duplicated business logic.
+
+    - path: "apps/api/prisma/**"
+      instructions: |
+        Review Prisma schema changes, migrations, and seed data carefully.
+        Check relational integrity, constraints, indexes, migration safety,
+        data preservation, and rollback implications.
+        Flag destructive changes unless accompanied by a justified migration plan.
+
+    - path: "apps/mobile/**"
+      instructions: |
+        Review the Expo and React Native application for iOS and Android
+        compatibility, API integration, navigation correctness, loading and
+        error states, accessibility, and learner progress integrity.
+        Do not recommend platform-specific changes that break the other platform.
+
+    - path: "apps/web/**"
+      instructions: |
+        Review the Next.js management portal for authorization-aware behavior,
+        form validation, error handling, accessibility, and correct API usage.
+        Hidden UI controls must never be treated as a substitute for
+        server-side permission enforcement.
+
+    - path: "packages/**"
+      instructions: |
+        Review shared code for type safety, backwards compatibility,
+        maintainability, and unintended effects on dependent applications.
+
+    - path: ".github/workflows/**"
+      instructions: |
+        Review workflow permissions, secret handling, dependency security,
+        build and test reliability, and deployment safety.

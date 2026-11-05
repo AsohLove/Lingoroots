@@ -1,10 +1,15 @@
 {
   "name": "lingoroots",
   "version": "1.0.0",
-  "private":true,
+  "private": true,
   "workspaces": [
-    "apps/*",
+    "apps/api",
+    "apps/mobile",
     "packages/*"
   ],
-  "scripts": {}
+  "scripts": {},
+  "overrides": {
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  }
 }

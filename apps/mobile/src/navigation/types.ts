@@ -1,0 +1,34 @@
+
+import type { NavigatorScreenParams } from '@react-navigation/native';
+
+export type TabParamList = {
+  Home: undefined;
+  Explore: undefined;
+  Progress: undefined;
+  Profile: undefined;
+};
+
+export type RootStackParamList = {
+  PublicHome: undefined;
+  Login: undefined;
+  Register: undefined;
+  VerifyEmail: { email: string };
+
+  MainTabs: NavigatorScreenParams<TabParamList> | undefined;
+
+  Units: {
+    levelId: string;
+    levelName: string;
+  };
+
+  Lessons: {
+    unitId: string;
+    unitName: string;
+  };
+
+  Lesson: {
+    unitId: string;
+    lessonId: string;
+    lessonName: string;
+  };
+};
