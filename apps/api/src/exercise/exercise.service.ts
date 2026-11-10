@@ -36,7 +36,10 @@ export class ExerciseService {
     }
   }
 
-  private async getLessonLanguageId(lessonId: string): Promise<string> {
+  private async getLessonScope(lessonId: string): Promise<{
+    languageId: string;
+    variantId: string | null;
+  }> {
     const lesson = await this.prisma.lesson.findUnique({
       where: { id: lessonId },
       select: {
@@ -45,7 +48,10 @@ export class ExerciseService {
             level: {
               select: {
                 course: {
-                  select: { languageId: true },
+                  select: {
+                    languageId: true,
+                    variantId: true,
+                  },
                 },
               },
             },
@@ -58,7 +64,7 @@ export class ExerciseService {
       throw new NotFoundException('Lesson was not found');
     }
 
-    return lesson.unit.level.course.languageId;
+    return lesson.unit.level.course;
   }
 
   private validateExerciseContent(dto: {
@@ -110,10 +116,13 @@ export class ExerciseService {
 
     this.validateExerciseContent(dto);
 
-    const languageId = await this.getLessonLanguageId(lessonId);
+    const scope = await this.getLessonScope(lessonId);
 
-    await this.authorizationService.requireLanguageAccess(user.id, languageId);
-
+    await this.authorizationService.requireCourseAccess(
+      user.id,
+      scope.languageId,
+      scope.variantId,
+    );
     const count = await this.prisma.exercise.count({
       where: { lessonId },
     });
@@ -165,7 +174,7 @@ export class ExerciseService {
               select: {
                 level: {
                   select: {
-                    course: { select: { languageId: true } },
+                    course: { select: { languageId: true, variantId: true } },
                   },
                 },
               },
@@ -192,9 +201,10 @@ export class ExerciseService {
       );
     }
 
-    await this.authorizationService.requireLanguageAccess(
+    await this.authorizationService.requireCourseAccess(
       user.id,
       exercise.lesson.unit.level.course.languageId,
+      exercise.lesson.unit.level.course.variantId,
     );
 
     const type = dto.type ?? exercise.type;
@@ -271,6 +281,14 @@ export class ExerciseService {
       throw new BadRequestException('This exercise cannot be submitted');
     }
 
+    const scope = await this.getLessonScope(exercise.lessonId);
+
+    await this.authorizationService.requireCourseAccess(
+      user.id,
+      scope.languageId,
+      scope.variantId,
+    );
+
     return this.prisma.exercise.update({
       where: { id: exerciseId },
       data: { status: ContentStatus.SUBMITTED },
@@ -292,7 +310,7 @@ export class ExerciseService {
                 level: {
                   select: {
                     course: {
-                      select: { languageId: true },
+                      select: { languageId: true, variantId: true },
                     },
                   },
                 },
@@ -311,9 +329,10 @@ export class ExerciseService {
       throw new ForbiddenException('You can only version your own exercises');
     }
 
-    await this.authorizationService.requireLanguageAccess(
+    await this.authorizationService.requireCourseAccess(
       user.id,
       exercise.lesson.unit.level.course.languageId,
+      exercise.lesson.unit.level.course.variantId,
     );
 
     if (exercise.status !== ContentStatus.PUBLISHED) {

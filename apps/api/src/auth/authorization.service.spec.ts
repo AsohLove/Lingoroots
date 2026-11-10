@@ -92,7 +92,7 @@ describe('AuthorizationService', () => {
       });
 
       await expect(
-        service.requireLanguageAccess('user-1', 'language-1'),
+        service.requireLanguageAccess('user-1', 'language-1', null),
       ).resolves.toBeUndefined();
     });
 
@@ -100,7 +100,7 @@ describe('AuthorizationService', () => {
       prismaMock.languageAuthorization.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.requireLanguageAccess('user-1', 'language-1'),
+        service.requireLanguageAccess('user-1', 'language-1', null),
       ).rejects.toBeInstanceOf(ForbiddenException);
     });
   });
@@ -123,5 +123,52 @@ describe('AuthorizationService', () => {
         service.requireVariantAccess('user-1', 'language-1', 'variant-1'),
       ).rejects.toBeInstanceOf(ForbiddenException);
     });
+
+    it('does not recognize revoked language grants', async () => {
+      prismaMock.languageAuthorization.findFirst.mockResolvedValue(null);
+
+      await expect(
+        service.hasLanguageAccess('user-1', 'language-1'),
+      ).resolves.toBe(false);
+
+      expect(prismaMock.languageAuthorization.findFirst).toHaveBeenCalledWith({
+        where: {
+          userId: 'user-1',
+          languageId: 'language-1',
+          variantId: null,
+          revokedAt: null,
+        },
+      });
+    });
   });
+
+  describe('hasCourseAccess', () => {
+  it('requires a language-wide grant for courses without variants', async () => {
+    prismaMock.languageAuthorization.findFirst.mockResolvedValue({
+      id: 'auth-1',
+    });
+
+    await expect(
+      service.hasCourseAccess('user-1', 'language-1', null),
+    ).resolves.toBe(true);
+  });
+
+  it('allows a variant-specific grant for its variant', async () => {
+    prismaMock.languageAuthorization.findFirst.mockResolvedValue({
+      id: 'auth-2',
+    });
+
+    await expect(
+      service.hasCourseAccess('user-1', 'language-1', 'variant-1'),
+    ).resolves.toBe(true);
+  });
+
+  it('does not allow a different variant grant', async () => {
+    prismaMock.languageAuthorization.findFirst.mockResolvedValue(null);
+
+    await expect(
+      service.hasCourseAccess('user-1', 'language-1', 'variant-2'),
+    ).resolves.toBe(false);
+  });
+});
 });

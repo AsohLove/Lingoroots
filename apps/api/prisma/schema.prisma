@@ -14,9 +14,10 @@ model Language {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  courses        Course[]
-  variants       Variant[]
-  authorizations LanguageAuthorization[]
+  courses                 Course[]
+  variants                Variant[]
+  authorizations          LanguageAuthorization[]
+  contributorApplications ContributorApplication[]
 }
 
 model Course {
@@ -170,16 +171,20 @@ model User {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
-  sessions          Session[]
-  roles             UserRole[]
-  authorizations    LanguageAuthorization[]
-  vocabularyItems   VocabularyItem[]
-  contentReviews    ContentReview[]
-  emailVerification EmailVerification?
-  exercisesCreated  Exercise[]
-  exerciseReviews   ExerciseReview[]
-  exerciseAttempts  ExerciseAttempt[]
-  learningProgress  LessonProgress[]
+  sessions                Session[]
+  roles                   UserRole[]
+  authorizations          LanguageAuthorization[]        @relation("AuthorizationRecipient")
+  vocabularyItems         VocabularyItem[]
+  contentReviews          ContentReview[]
+  emailVerification       EmailVerification?
+  exercisesCreated        Exercise[]
+  exerciseReviews         ExerciseReview[]
+  exerciseAttempts        ExerciseAttempt[]
+  learningProgress        LessonProgress[]
+  contributorApplications ContributorApplication[]
+  applicationReviews      ContributorApplicationReview[]
+  authorizationsGranted   LanguageAuthorization[]        @relation("AuthorizationGrantor")
+  authorizationsRevoked   LanguageAuthorization[]        @relation("AuthorizationRevoker")
 }
 
 model EmailVerification {
@@ -236,6 +241,20 @@ enum LessonProgressStatus {
   COMPLETED
 }
 
+enum ContributorApplicationStatus {
+  PENDING
+  UNDER_REVIEW
+  CHANGES_REQUESTED
+  APPROVED
+  REJECTED
+}
+
+enum ContributorApplicationDecision {
+  APPROVED
+  CHANGES_REQUESTED
+  REJECTED
+}
+
 model UserRole {
   id        String   @id @default(uuid())
   userId    String
@@ -256,28 +275,38 @@ model Variant {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  language       Language                @relation(fields: [languageId], references: [id])
-  courses        Course[]
-  authorizations LanguageAuthorization[]
+  language                Language                 @relation(fields: [languageId], references: [id])
+  courses                 Course[]
+  authorizations          LanguageAuthorization[]
+  contributorApplications ContributorApplication[]
 
   @@index([languageId])
 }
 
 model LanguageAuthorization {
-  id         String   @id @default(uuid())
-  userId     String
-  languageId String
-  variantId  String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id               String    @id @default(uuid())
+  userId           String
+  languageId       String
+  variantId        String?
+  applicationId    String?   @unique
+  grantedById      String?
+  revokedById      String?
+  revokedAt        DateTime?
+  revocationReason String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
-  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  language Language @relation(fields: [languageId], references: [id], onDelete: Cascade)
-  variant  Variant? @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  user        User                    @relation("AuthorizationRecipient", fields: [userId], references: [id], onDelete: Cascade)
+  language    Language                @relation(fields: [languageId], references: [id], onDelete: Restrict)
+  variant     Variant?                @relation(fields: [variantId], references: [id], onDelete: Restrict)
+  grantedBy   User?                   @relation("AuthorizationGrantor", fields: [grantedById], references: [id], onDelete: SetNull)
+  revokedBy   User?                   @relation("AuthorizationRevoker", fields: [revokedById], references: [id], onDelete: SetNull)
+  application ContributorApplication? @relation(fields: [applicationId], references: [id], onDelete: SetNull)
 
   @@index([userId])
   @@index([languageId])
   @@index([variantId])
+  @@index([userId, revokedAt])
 }
 
 model Exercise {
@@ -382,4 +411,42 @@ model LessonProgress {
 
   @@unique([userId, lessonId])
   @@index([userId, status])
+}
+
+model ContributorApplication {
+  id                 String                       @id @default(uuid())
+  userId             String
+  languageId         String
+  variantId          String?
+  expertiseStatement String                       @db.Text
+  evidenceUrls       String[]                     @default([])
+  status             ContributorApplicationStatus @default(PENDING)
+  submittedAt        DateTime                     @default(now())
+  createdAt          DateTime                     @default(now())
+  updatedAt          DateTime                     @updatedAt
+
+  user          User                           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  language      Language                       @relation(fields: [languageId], references: [id], onDelete: Restrict)
+  variant       Variant?                       @relation(fields: [variantId], references: [id], onDelete: Restrict)
+  reviews       ContributorApplicationReview[]
+  authorization LanguageAuthorization?
+
+  @@index([userId, status])
+  @@index([languageId, status])
+  @@index([status, submittedAt])
+}
+
+model ContributorApplicationReview {
+  id            String                         @id @default(uuid())
+  applicationId String
+  reviewerId    String
+  decision      ContributorApplicationDecision
+  comment       String                         @db.Text
+  createdAt     DateTime                       @default(now())
+
+  application ContributorApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  reviewer    User                   @relation(fields: [reviewerId], references: [id], onDelete: Restrict)
+
+  @@index([applicationId, createdAt])
+  @@index([reviewerId])
 }

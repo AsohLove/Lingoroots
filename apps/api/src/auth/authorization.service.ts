@@ -20,6 +20,7 @@ export class AuthorizationService {
         userId,
         languageId,
         variantId: null,
+        revokedAt: null,
       },
     });
 
@@ -35,18 +36,24 @@ export class AuthorizationService {
       where: {
         userId,
         languageId,
-        OR: [
-          {
-            variantId: null,
-          },
-          {
-            variantId,
-          },
-        ],
+        revokedAt: null,
+        OR: [{ variantId: null }, { variantId }],
       },
     });
 
     return authorization !== null;
+  }
+
+  async hasCourseAccess(
+    userId: string,
+    languageId: string,
+    variantId: string | null,
+  ): Promise<boolean> {
+    if (variantId === null) {
+      return this.hasLanguageAccess(userId, languageId);
+    }
+
+    return this.hasVariantAccess(userId, languageId, variantId);
   }
 
   requireRole(user: AuthenticatedUser, role: Role): void {
@@ -58,10 +65,9 @@ export class AuthorizationService {
   async requireLanguageAccess(
     userId: string,
     languageId: string,
+    _variantId: string | null,
   ): Promise<void> {
-    const hasAccess = await this.hasLanguageAccess(userId, languageId);
-
-    if (!hasAccess) {
+    if (!(await this.hasLanguageAccess(userId, languageId))) {
       throw new ForbiddenException('You do not have access to this language');
     }
   }
@@ -71,14 +77,20 @@ export class AuthorizationService {
     languageId: string,
     variantId: string,
   ): Promise<void> {
-    const hasAccess = await this.hasVariantAccess(
-      userId,
-      languageId,
-      variantId,
-    );
-
-    if (!hasAccess) {
+    if (!(await this.hasVariantAccess(userId, languageId, variantId))) {
       throw new ForbiddenException('You do not have access to this variant');
+    }
+  }
+
+  async requireCourseAccess(
+    userId: string,
+    languageId: string,
+    variantId: string | null,
+  ): Promise<void> {
+    if (!(await this.hasCourseAccess(userId, languageId, variantId))) {
+      throw new ForbiddenException(
+        'You do not have authorization to contribute to this course',
+      );
     }
   }
 
@@ -86,6 +98,7 @@ export class AuthorizationService {
     return this.prisma.languageAuthorization.findMany({
       where: {
         userId,
+        revokedAt: null,
       },
       include: {
         language: true,

@@ -48,9 +48,10 @@ export class ContentService {
       throw new NotFoundException('Lesson not found');
     }
 
-    await this.authorizationService.requireLanguageAccess(
+    await this.authorizationService.requireCourseAccess(
       user.id,
       lesson.unit.level.course.languageId,
+      lesson.unit.level.course.variantId,
     );
 
     const existingCount = await this.prisma.vocabularyItem.count({
@@ -155,9 +156,10 @@ export class ContentService {
       throw new ForbiddenException('Only draft content can be edited');
     }
 
-    await this.authorizationService.requireLanguageAccess(
+    await this.authorizationService.requireCourseAccess(
       user.id,
       vocabulary.lesson.unit.level.course.languageId,
+      vocabulary.lesson.unit.level.course.variantId,
     );
 
     return this.prisma.vocabularyItem.update({
@@ -204,9 +206,10 @@ export class ContentService {
       throw new ConflictException('Only published vocabulary can be versioned');
     }
 
-    await this.authorizationService.requireLanguageAccess(
+    await this.authorizationService.requireCourseAccess(
       user.id,
       vocabulary.lesson.unit.level.course.languageId,
+      vocabulary.lesson.unit.level.course.variantId,
     );
 
     const latestVersion = await this.prisma.vocabularyItem.findFirst({
@@ -240,38 +243,61 @@ export class ContentService {
   }
 
   async submitVocabulary(vocabularyId: string, user: AuthenticatedUser) {
-    this.authorizationService.requireRole(user, 'CONTRIBUTOR');
+  this.authorizationService.requireRole(user, 'CONTRIBUTOR');
 
-    const vocabulary = await this.prisma.vocabularyItem.findUnique({
-      where: {
-        id: vocabularyId,
+  const vocabulary = await this.prisma.vocabularyItem.findUnique({
+    where: { id: vocabularyId },
+    include: {
+      lesson: {
+        include: {
+          unit: {
+            include: {
+              level: {
+                include: {
+                  course: true,
+                },
+              },
+            },
+          },
+        },
       },
-    });
+    },
+  });
 
-    if (!vocabulary) {
-      throw new NotFoundException('Vocabulary item not found');
-    }
-
-    if (vocabulary.createdById !== user.id) {
-      throw new ForbiddenException('You can only submit your own vocabulary');
-    }
-
-    if (
-      vocabulary.status !== 'DRAFT' &&
-      vocabulary.status !== 'CHANGES_REQUESTED'
-    ) {
-      throw new ForbiddenException('Only draft content can be submitted');
-    }
-
-    return this.prisma.vocabularyItem.update({
-      where: {
-        id: vocabularyId,
-      },
-      data: {
-        status: 'SUBMITTED',
-      },
-    });
+  if (!vocabulary) {
+    throw new NotFoundException('Vocabulary item not found');
   }
+
+  if (vocabulary.createdById !== user.id) {
+    throw new ForbiddenException(
+      'You can only submit your own vocabulary',
+    );
+  }
+
+  if (
+    vocabulary.status !== 'DRAFT' &&
+    vocabulary.status !== 'CHANGES_REQUESTED'
+  ) {
+    throw new ForbiddenException(
+      'Only draft content can be submitted',
+    );
+  }
+
+  const course = vocabulary.lesson.unit.level.course;
+
+  await this.authorizationService.requireCourseAccess(
+    user.id,
+    course.languageId,
+    course.variantId,
+  );
+
+  return this.prisma.vocabularyItem.update({
+    where: { id: vocabularyId },
+    data: {
+      status: 'SUBMITTED',
+    },
+  });
+}
 
   async getSubmittedVocabulary(user: AuthenticatedUser) {
     this.authorizationService.requireRole(user, 'REVIEWER');
