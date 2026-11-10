@@ -155,27 +155,60 @@ export class ContributorGovernanceService {
     }
 
     const languageId = dto.languageId ?? application.languageId;
+
     const variantId =
       dto.variantId === undefined ? application.variantId : dto.variantId;
 
     await this.validateScope(languageId, variantId);
 
-    return this.prisma.contributorApplication.update({
-      where: { id: applicationId },
-      data: {
-        languageId,
-        variantId,
-        expertiseStatement:
-          dto.expertiseStatement?.trim() ?? application.expertiseStatement,
-        evidenceUrls: dto.evidenceUrls ?? application.evidenceUrls,
-        status: ContributorApplicationStatus.PENDING,
-        submittedAt: new Date(),
-      },
-      include: {
-        language: true,
-        variant: true,
-      },
-    });
+    try {
+      const updated = await this.prisma.contributorApplication.updateMany({
+        where: {
+          id: applicationId,
+          userId: user.id,
+          status: ContributorApplicationStatus.CHANGES_REQUESTED,
+        },
+        data: {
+          languageId,
+          variantId,
+          expertiseStatement:
+            dto.expertiseStatement?.trim() ?? application.expertiseStatement,
+          evidenceUrls: dto.evidenceUrls ?? application.evidenceUrls,
+          status: ContributorApplicationStatus.PENDING,
+          submittedAt: new Date(),
+        },
+      });
+
+      if (updated.count !== 1) {
+        throw new ConflictException(
+          'This application has changed and can no longer be updated',
+        );
+      }
+
+      return this.prisma.contributorApplication.findUniqueOrThrow({
+        where: { id: applicationId },
+        include: {
+          language: true,
+          variant: true,
+          reviews: {
+            orderBy: { createdAt: 'desc' },
+            include: {
+              reviewer: {
+                select: { id: true, name: true },
+              },
+            },
+          },
+        },
+      });
+    } catch (error) {
+      if (isUniqueConstraintError(error)) {
+        throw new ConflictException(
+          'You already have an active application for this scope',
+        );
+      }
+
+      throw error;
+    }
   }
 
   async getAdminApplications(user: AuthenticatedUser) {
@@ -373,6 +406,47 @@ export class ContributorGovernanceService {
 
     return this.prisma.languageAuthorization.findUnique({
       where: { id: authorizationId },
+    });
+  }
+
+  async getAdminAuthorizations(admin: AuthenticatedUser) {
+    this.authorization.requireRole(admin, 'ADMINISTRATOR');
+
+    return this.prisma.languageAuthorization.findMany({
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        language: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        variant: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        grantedBy: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        revokedBy: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+      orderBy: [{ revokedAt: 'asc' }, { createdAt: 'desc' }],
     });
   }
 }

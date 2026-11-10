@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import {
   ApiOkResponse,
   ApiOperation,
@@ -20,5 +20,16 @@ export class LanguageController {
   })
   findAll() {
     return this.languageService.findAll();
+  }
+
+  @Get(':languageId/variants')
+  @ApiOperation({
+    summary: 'Get variants belonging to a language',
+  })
+  @ApiOkResponse({
+    description: 'Language variants retrieved successfully',
+  })
+  findVariants(@Param('languageId') languageId: string) {
+    return this.languageService.findVariants(languageId);
   }
 }

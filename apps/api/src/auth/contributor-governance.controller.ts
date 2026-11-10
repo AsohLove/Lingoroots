@@ -9,10 +9,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import type { Request } from 'express';
-import {
-  ApiBearerAuth,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 import { AuthGuard } from './guards/auth.guard.js';
 import { RolesGuard } from './guards/roles.guard.js';
@@ -29,15 +26,10 @@ import { RevokeAuthorizationDto } from './dto/revoke-authorization.dto.js';
 @Controller()
 @UseGuards(AuthGuard)
 export class ContributorGovernanceController {
-  constructor(
-    private readonly governance: ContributorGovernanceService,
-  ) {}
+  constructor(private readonly governance: ContributorGovernanceService) {}
 
   @Post('contributor-applications')
-  apply(
-    @Body() dto: CreateContributorApplicationDto,
-    @Req() request: Request,
-  ) {
+  apply(@Body() dto: CreateContributorApplicationDto, @Req() request: Request) {
     return this.governance.apply(dto, request.user!);
   }
 
@@ -52,11 +44,7 @@ export class ContributorGovernanceController {
     @Body() dto: UpdateContributorApplicationDto,
     @Req() request: Request,
   ) {
-    return this.governance.updateApplication(
-      applicationId,
-      dto,
-      request.user!,
-    );
+    return this.governance.updateApplication(applicationId, dto, request.user!);
   }
 
   @Get('admin/contributor-applications')
@@ -74,11 +62,14 @@ export class ContributorGovernanceController {
     @Body() dto: ReviewContributorApplicationDto,
     @Req() request: Request,
   ) {
-    return this.governance.reviewApplication(
-      applicationId,
-      dto,
-      request.user!,
-    );
+    return this.governance.reviewApplication(applicationId, dto, request.user!);
+  }
+
+  @Get('admin/authorizations')
+  @UseGuards(RolesGuard)
+  @Roles('ADMINISTRATOR')
+  getAdminAuthorizations(@Req() request: Request) {
+    return this.governance.getAdminAuthorizations(request.user!);
   }
 
   @Post('admin/authorizations/:authorizationId/revoke')
@@ -95,4 +86,5 @@ export class ContributorGovernanceController {
       request.user!,
     );
   }
+
 }

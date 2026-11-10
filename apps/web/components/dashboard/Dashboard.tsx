@@ -23,6 +23,8 @@ import ContentWorkspace from "../content/ContentWorkspace";
 import SubmissionsWorkspace from "../content/SubmissionsWorkspace";
 import { ReviewWorkspace } from "../reviews/ReviewWorkspace";
 import { ExerciseReviewWorkspace } from "../reviews/ExerciseReviewerWorkspace";
+import ContributorApplicationsWorkspace from "../governance/ContributorApplicationsWorkspace";
+import AdminGovernanceWorkspace from "../governance/AdminGovernanceWorkspace";
 
 type DashboardProps = {
   user: AuthenticatedUser;
@@ -166,9 +168,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
         <DashboardHeader user={user} />
 
         <main className="flex-1 p-8">
-          {activePage === "Content" && canContribute && (
-            <ContentWorkspace />
-          )}
+          {activePage === "Content" && canContribute && <ContentWorkspace />}
 
           {activePage === "Submissions" && canContribute && (
             <SubmissionsWorkspace />
@@ -184,6 +184,14 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
             </div>
           )}
 
+          {activePage === "Contributor applications" && (
+            <ContributorApplicationsWorkspace />
+          )}
+
+          {activePage === "Governance" && isAdministrator && (
+            <AdminGovernanceWorkspace />
+          )}
+
           {activePage === "Dashboard" && (
             <>
               <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
@@ -191,9 +199,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                   <>
                     <StatCard
                       label="My submissions"
-                      value={
-                        statsLoading ? "…" : String(stats.submissions)
-                      }
+                      value={statsLoading ? "…" : String(stats.submissions)}
                       description="Exercises created by you"
                     />
 
@@ -206,9 +212,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                     <StatCard
                       label="Changes requested"
                       value={
-                        statsLoading
-                          ? "…"
-                          : String(stats.changesRequested)
+                        statsLoading ? "…" : String(stats.changesRequested)
                       }
                       description="Exercises requiring your attention"
                     />
@@ -218,11 +222,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                 {canReview && (
                   <StatCard
                     label="Awaiting review"
-                    value={
-                      statsLoading
-                        ? "…"
-                        : String(stats.awaitingReview)
-                    }
+                    value={statsLoading ? "…" : String(stats.awaitingReview)}
                     description="Exercise submissions in the review queue"
                   />
                 )}
