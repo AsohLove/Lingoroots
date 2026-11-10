@@ -1,6 +1,9 @@
+
 'use client';
 
-import { FormEvent, useState } from 'react';
+import { useState } from 'react';
+import type { FormEvent } from 'react';
+
 import { api } from '../../lib/api';
 
 type VocabularyFormProps = {
@@ -15,9 +18,7 @@ type VocabularyItem = {
   status: string;
 };
 
-export function VocabularyForm({
-  lessonId,
-}: VocabularyFormProps) {
+export function VocabularyForm({ lessonId }: VocabularyFormProps) {
   const [term, setTerm] = useState('');
   const [translation, setTranslation] = useState('');
   const [notes, setNotes] = useState('');
@@ -30,8 +31,15 @@ export function VocabularyForm({
   const [saving, setSaving] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  async function handleSave(event: FormEvent) {
+  const canEdit =
+    !vocabulary ||
+    vocabulary.status === 'DRAFT' ||
+    vocabulary.status === 'CHANGES_REQUESTED';
+
+  async function handleSave(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (!canEdit) return;
 
     setMessage('');
     setError('');
@@ -39,9 +47,11 @@ export function VocabularyForm({
 
     try {
       const result = await api<VocabularyItem>(
-        `/lessons/${lessonId}/vocabulary`,
+        vocabulary
+          ? `/vocabulary/${vocabulary.id}`
+          : `/lessons/${lessonId}/vocabulary`,
         {
-          method: 'POST',
+          method: vocabulary ? 'PATCH' : 'POST',
           body: {
             term,
             meaning: translation,
@@ -51,12 +61,14 @@ export function VocabularyForm({
       );
 
       setVocabulary(result);
-      setMessage('Vocabulary saved successfully as a draft.');
+      setMessage(
+        vocabulary
+          ? 'Vocabulary changes saved.'
+          : 'Vocabulary saved successfully as a draft.',
+      );
     } catch (err) {
       setError(
-        err instanceof Error
-          ? err.message
-          : 'Failed to save vocabulary.',
+        err instanceof Error ? err.message : 'Failed to save vocabulary.',
       );
     } finally {
       setSaving(false);
@@ -64,7 +76,11 @@ export function VocabularyForm({
   }
 
   async function handleSubmitForReview() {
-    if (!vocabulary) {
+    if (
+      !vocabulary ||
+      (vocabulary.status !== 'DRAFT' &&
+        vocabulary.status !== 'CHANGES_REQUESTED')
+    ) {
       return;
     }
 
@@ -75,9 +91,7 @@ export function VocabularyForm({
     try {
       const result = await api<VocabularyItem>(
         `/vocabulary/${vocabulary.id}/submit`,
-        {
-          method: 'POST',
-        },
+        { method: 'POST' },
       );
 
       setVocabulary(result);
@@ -93,7 +107,9 @@ export function VocabularyForm({
     }
   }
 
-  const isDraft = vocabulary?.status === 'DRAFT';
+  const canSubmit =
+    vocabulary?.status === 'DRAFT' ||
+    vocabulary?.status === 'CHANGES_REQUESTED';
 
   return (
     <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -107,10 +123,7 @@ export function VocabularyForm({
         </p>
       </div>
 
-      <form
-        onSubmit={handleSave}
-        className="space-y-5"
-      >
+      <form onSubmit={handleSave} className="space-y-5">
         <div>
           <label
             htmlFor="term"
@@ -124,7 +137,8 @@ export function VocabularyForm({
             value={term}
             onChange={(event) => setTerm(event.target.value)}
             required
-            className="w-full rounded-lg border border-slate-300 px-3 py-2.5 outline-none focus:border-slate-500"
+            disabled={!canEdit}
+            className="w-full rounded-lg border border-slate-300 px-3 py-2.5 outline-none disabled:bg-slate-100 focus:border-slate-500"
             placeholder="Enter the vocabulary term"
           />
         </div>
@@ -140,11 +154,10 @@ export function VocabularyForm({
           <input
             id="translation"
             value={translation}
-            onChange={(event) =>
-              setTranslation(event.target.value)
-            }
+            onChange={(event) => setTranslation(event.target.value)}
             required
-            className="w-full rounded-lg border border-slate-300 px-3 py-2.5 outline-none focus:border-slate-500"
+            disabled={!canEdit}
+            className="w-full rounded-lg border border-slate-300 px-3 py-2.5 outline-none disabled:bg-slate-100 focus:border-slate-500"
             placeholder="Enter the meaning"
           />
         </div>
@@ -162,30 +175,35 @@ export function VocabularyForm({
             value={notes}
             onChange={(event) => setNotes(event.target.value)}
             rows={4}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2.5 outline-none focus:border-slate-500"
+            disabled={!canEdit}
+            className="w-full rounded-lg border border-slate-300 px-3 py-2.5 outline-none disabled:bg-slate-100 focus:border-slate-500"
             placeholder="Optional explanation or usage note"
           />
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <button
-            type="submit"
-            disabled={saving || submitting}
-            className="rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {saving ? 'Saving...' : 'Save Draft'}
-          </button>
+          {canEdit && (
+            <button
+              type="submit"
+              disabled={saving || submitting}
+              className="rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {saving
+                ? 'Saving...'
+                : vocabulary
+                  ? 'Save Changes'
+                  : 'Save Draft'}
+            </button>
+          )}
 
-          {isDraft && (
+          {canSubmit && (
             <button
               type="button"
               onClick={handleSubmitForReview}
               disabled={saving || submitting}
               className="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {submitting
-                ? 'Submitting...'
-                : 'Submit for Review'}
+              {submitting ? 'Submitting...' : 'Submit for Review'}
             </button>
           )}
         </div>
@@ -193,10 +211,7 @@ export function VocabularyForm({
 
       {vocabulary && (
         <div className="mt-6 rounded-lg bg-slate-50 p-4">
-          <p className="text-sm text-slate-600">
-            Status
-          </p>
-
+          <p className="text-sm text-slate-600">Status</p>
           <p className="mt-1 font-semibold text-slate-900">
             {vocabulary.status}
           </p>
@@ -204,15 +219,11 @@ export function VocabularyForm({
       )}
 
       {message && (
-        <p className="mt-4 text-sm text-green-700">
-          {message}
-        </p>
+        <p className="mt-4 text-sm text-green-700">{message}</p>
       )}
 
       {error && (
-        <p className="mt-4 text-sm text-red-600">
-          {error}
-        </p>
+        <p className="mt-4 text-sm text-red-600">{error}</p>
       )}
     </section>
   );

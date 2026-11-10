@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -14,12 +15,12 @@ import LevelSelector from './LevelSelector';
 import LessonSelector from './LessonSelector';
 import UnitSelector from './UnitSelector';
 import { VocabularyForm } from './VocabularyForm';
-
 import { ExerciseForm } from './ExerciseForm';
 
 type Course = {
   id: string;
   name: string;
+  variantId: string | null;
 };
 
 type Level = {
@@ -63,7 +64,10 @@ export default function ContentWorkspace() {
 
   const [error, setError] = useState<string | null>(null);
 
+  // Load the contributor's active language and variant authorizations.
   useEffect(() => {
+    let cancelled = false;
+
     async function loadAuthorizations() {
       try {
         setLoadingAuthorizations(true);
@@ -71,27 +75,42 @@ export default function ContentWorkspace() {
 
         const data = await getMyAuthorizations();
 
-        setAuthorizations(data);
+        if (!cancelled) {
+          setAuthorizations(data);
+        }
       } catch (error) {
-        setError(
-          error instanceof Error
-            ? error.message
-            : 'Failed to load your content access.',
-        );
+        if (!cancelled) {
+          setError(
+            error instanceof Error
+              ? error.message
+              : 'Failed to load your content access.',
+          );
+        }
       } finally {
-        setLoadingAuthorizations(false);
+        if (!cancelled) {
+          setLoadingAuthorizations(false);
+        }
       }
     }
 
     loadAuthorizations();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
+  // Load courses, then expose only courses within the contributor's scope.
   useEffect(() => {
-    if (!languageId) {
-      return;
-    }
+    let cancelled = false;
 
     async function loadCourses() {
+      if (!languageId) {
+        setCourses([]);
+        setLoadingCourses(false);
+        return;
+      }
+
       try {
         setLoadingCourses(true);
         setError(null);
@@ -100,28 +119,73 @@ export default function ContentWorkspace() {
           `/languages/${languageId}/courses`,
         );
 
-        setCourses(data);
-      } catch (error) {
-        setError(
-          error instanceof Error
-            ? error.message
-            : 'Failed to load courses.',
+        if (cancelled) {
+          return;
+        }
+
+        const languageAuthorizations = authorizations.filter(
+          (authorization) =>
+            authorization.languageId === languageId,
         );
-        setCourses([]);
+
+        const hasLanguageWideAccess = languageAuthorizations.some(
+          (authorization) => authorization.variantId === null,
+        );
+
+        const authorizedVariantIds = new Set(
+          languageAuthorizations
+            .filter(
+              (authorization) => authorization.variantId !== null,
+            )
+            .map((authorization) => authorization.variantId),
+        );
+
+        const accessibleCourses = data.filter((course) => {
+          if (hasLanguageWideAccess) {
+            return true;
+          }
+
+          return (
+            course.variantId !== null &&
+            authorizedVariantIds.has(course.variantId)
+          );
+        });
+
+        setCourses(accessibleCourses);
+      } catch (error) {
+        if (!cancelled) {
+          setError(
+            error instanceof Error
+              ? error.message
+              : 'Failed to load courses.',
+          );
+          setCourses([]);
+        }
       } finally {
-        setLoadingCourses(false);
+        if (!cancelled) {
+          setLoadingCourses(false);
+        }
       }
     }
 
     loadCourses();
-  }, [languageId]);
 
+    return () => {
+      cancelled = true;
+    };
+  }, [languageId, authorizations]);
+
+  // Load levels for the selected course.
   useEffect(() => {
-    if (!courseId) {
-      return;
-    }
+    let cancelled = false;
 
     async function loadLevels() {
+      if (!courseId) {
+        setLevels([]);
+        setLoadingLevels(false);
+        return;
+      }
+
       try {
         setLoadingLevels(true);
         setError(null);
@@ -130,28 +194,43 @@ export default function ContentWorkspace() {
           `/courses/${courseId}/levels`,
         );
 
-        setLevels(data);
+        if (!cancelled) {
+          setLevels(data);
+        }
       } catch (error) {
-        setError(
-          error instanceof Error
-            ? error.message
-            : 'Failed to load levels.',
-        );
-        setLevels([]);
+        if (!cancelled) {
+          setError(
+            error instanceof Error
+              ? error.message
+              : 'Failed to load levels.',
+          );
+          setLevels([]);
+        }
       } finally {
-        setLoadingLevels(false);
+        if (!cancelled) {
+          setLoadingLevels(false);
+        }
       }
     }
 
     loadLevels();
+
+    return () => {
+      cancelled = true;
+    };
   }, [courseId]);
 
+  // Load units for the selected level.
   useEffect(() => {
-    if (!levelId) {
-      return;
-    }
+    let cancelled = false;
 
     async function loadUnits() {
+      if (!levelId) {
+        setUnits([]);
+        setLoadingUnits(false);
+        return;
+      }
+
       try {
         setLoadingUnits(true);
         setError(null);
@@ -160,28 +239,43 @@ export default function ContentWorkspace() {
           `/levels/${levelId}/units`,
         );
 
-        setUnits(data);
+        if (!cancelled) {
+          setUnits(data);
+        }
       } catch (error) {
-        setError(
-          error instanceof Error
-            ? error.message
-            : 'Failed to load units.',
-        );
-        setUnits([]);
+        if (!cancelled) {
+          setError(
+            error instanceof Error
+              ? error.message
+              : 'Failed to load units.',
+          );
+          setUnits([]);
+        }
       } finally {
-        setLoadingUnits(false);
+        if (!cancelled) {
+          setLoadingUnits(false);
+        }
       }
     }
 
     loadUnits();
+
+    return () => {
+      cancelled = true;
+    };
   }, [levelId]);
 
+  // Load lessons for the selected unit.
   useEffect(() => {
-    if (!unitId) {
-      return;
-    }
+    let cancelled = false;
 
     async function loadLessons() {
+      if (!unitId) {
+        setLessons([]);
+        setLoadingLessons(false);
+        return;
+      }
+
       try {
         setLoadingLessons(true);
         setError(null);
@@ -190,20 +284,30 @@ export default function ContentWorkspace() {
           `/units/${unitId}/lessons`,
         );
 
-        setLessons(data);
+        if (!cancelled) {
+          setLessons(data);
+        }
       } catch (error) {
-        setError(
-          error instanceof Error
-            ? error.message
-            : 'Failed to load lessons.',
-        );
-        setLessons([]);
+        if (!cancelled) {
+          setError(
+            error instanceof Error
+              ? error.message
+              : 'Failed to load lessons.',
+          );
+          setLessons([]);
+        }
       } finally {
-        setLoadingLessons(false);
+        if (!cancelled) {
+          setLoadingLessons(false);
+        }
       }
     }
 
     loadLessons();
+
+    return () => {
+      cancelled = true;
+    };
   }, [unitId]);
 
   function handleLanguageChange(nextLanguageId: string) {
@@ -219,6 +323,11 @@ export default function ContentWorkspace() {
     setUnits([]);
     setLessons([]);
 
+    setLoadingCourses(false);
+    setLoadingLevels(false);
+    setLoadingUnits(false);
+    setLoadingLessons(false);
+
     setError(null);
   }
 
@@ -233,6 +342,10 @@ export default function ContentWorkspace() {
     setUnits([]);
     setLessons([]);
 
+    setLoadingLevels(false);
+    setLoadingUnits(false);
+    setLoadingLessons(false);
+
     setError(null);
   }
 
@@ -245,6 +358,9 @@ export default function ContentWorkspace() {
     setUnits([]);
     setLessons([]);
 
+    setLoadingUnits(false);
+    setLoadingLessons(false);
+
     setError(null);
   }
 
@@ -253,6 +369,8 @@ export default function ContentWorkspace() {
 
     setLessonId('');
     setLessons([]);
+
+    setLoadingLessons(false);
 
     setError(null);
   }

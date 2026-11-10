@@ -243,61 +243,57 @@ export class ContentService {
   }
 
   async submitVocabulary(vocabularyId: string, user: AuthenticatedUser) {
-  this.authorizationService.requireRole(user, 'CONTRIBUTOR');
+    this.authorizationService.requireRole(user, 'CONTRIBUTOR');
 
-  const vocabulary = await this.prisma.vocabularyItem.findUnique({
-    where: { id: vocabularyId },
-    include: {
-      lesson: {
-        include: {
-          unit: {
-            include: {
-              level: {
-                include: {
-                  course: true,
+    const vocabulary = await this.prisma.vocabularyItem.findUnique({
+      where: { id: vocabularyId },
+      include: {
+        lesson: {
+          include: {
+            unit: {
+              include: {
+                level: {
+                  include: {
+                    course: true,
+                  },
                 },
               },
             },
           },
         },
       },
-    },
-  });
+    });
 
-  if (!vocabulary) {
-    throw new NotFoundException('Vocabulary item not found');
-  }
+    if (!vocabulary) {
+      throw new NotFoundException('Vocabulary item not found');
+    }
 
-  if (vocabulary.createdById !== user.id) {
-    throw new ForbiddenException(
-      'You can only submit your own vocabulary',
+    if (vocabulary.createdById !== user.id) {
+      throw new ForbiddenException('You can only submit your own vocabulary');
+    }
+
+    if (
+      vocabulary.status !== 'DRAFT' &&
+      vocabulary.status !== 'CHANGES_REQUESTED'
+    ) {
+      throw new ForbiddenException('Only draft content can be submitted');
+    }
+
+    const course = vocabulary.lesson.unit.level.course;
+
+    await this.authorizationService.requireCourseAccess(
+      user.id,
+      course.languageId,
+      course.variantId,
     );
+
+    return this.prisma.vocabularyItem.update({
+      where: { id: vocabularyId },
+      data: {
+        status: 'SUBMITTED',
+      },
+    });
   }
-
-  if (
-    vocabulary.status !== 'DRAFT' &&
-    vocabulary.status !== 'CHANGES_REQUESTED'
-  ) {
-    throw new ForbiddenException(
-      'Only draft content can be submitted',
-    );
-  }
-
-  const course = vocabulary.lesson.unit.level.course;
-
-  await this.authorizationService.requireCourseAccess(
-    user.id,
-    course.languageId,
-    course.variantId,
-  );
-
-  return this.prisma.vocabularyItem.update({
-    where: { id: vocabularyId },
-    data: {
-      status: 'SUBMITTED',
-    },
-  });
-}
 
   async getSubmittedVocabulary(user: AuthenticatedUser) {
     this.authorizationService.requireRole(user, 'REVIEWER');
@@ -371,14 +367,21 @@ export class ContentService {
     }
 
     return this.prisma.$transaction(async (tx) => {
-      const updated = await tx.vocabularyItem.update({
+      const claimed = await tx.vocabularyItem.updateMany({
         where: {
           id: vocabularyId,
+          status: 'SUBMITTED',
         },
         data: {
           status: 'UNDER_REVIEW',
         },
       });
+
+      if (claimed.count !== 1) {
+        throw new ConflictException(
+          'This vocabulary is no longer available for review',
+        );
+      }
 
       await tx.contentReview.create({
         data: {
@@ -388,7 +391,11 @@ export class ContentService {
         },
       });
 
-      return updated;
+      return tx.vocabularyItem.findUniqueOrThrow({
+        where: {
+          id: vocabularyId,
+        },
+      });
     });
   }
 
