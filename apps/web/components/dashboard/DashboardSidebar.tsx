@@ -21,9 +21,11 @@ export default function DashboardSidebar({
 
   const navigation = [
     { label: "Dashboard", visible: true },
+    { label: "Contributor applications", visible: true },
     { label: "Content", visible: canContribute },
     { label: "Submissions", visible: canContribute },
     { label: "Reviews", visible: canReview },
+    { label: "Governance", visible: isAdministrator },
   ].filter((item) => item.visible);
 
   return (

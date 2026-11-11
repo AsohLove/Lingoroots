@@ -446,7 +446,7 @@ export default function ContentWorkspace() {
 
       {lessonId && (
         <div className="space-y-6">
-          <VocabularyForm lessonId={lessonId} />
+          <VocabularyForm key={lessonId} lessonId={lessonId} />
 
           <ExerciseForm lessonId={lessonId} />
         </div>

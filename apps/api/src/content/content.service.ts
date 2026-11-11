@@ -25,7 +25,7 @@ export class ContentService {
     dto: CreateVocabularyDto,
     user: AuthenticatedUser,
   ) {
-    this.authorizationService.requireRole(user, 'CONTRIBUTOR');
+    this.authorizationService.requireRoleOrAdministrator(user, 'CONTRIBUTOR');
 
     const lesson = await this.prisma.lesson.findUnique({
       where: {
@@ -116,7 +116,7 @@ export class ContentService {
     dto: UpdateVocabularyDto,
     user: AuthenticatedUser,
   ) {
-    this.authorizationService.requireRole(user, 'CONTRIBUTOR');
+    this.authorizationService.requireRoleOrAdministrator(user, 'CONTRIBUTOR');
 
     const vocabulary = await this.prisma.vocabularyItem.findUnique({
       where: {
@@ -171,7 +171,7 @@ export class ContentService {
   }
 
   async createVocabularyVersion(vocabularyId: string, user: AuthenticatedUser) {
-    this.authorizationService.requireRole(user, 'CONTRIBUTOR');
+    this.authorizationService.requireRoleOrAdministrator(user, 'CONTRIBUTOR');
 
     const vocabulary = await this.prisma.vocabularyItem.findUnique({
       where: { id: vocabularyId },
@@ -243,7 +243,7 @@ export class ContentService {
   }
 
   async submitVocabulary(vocabularyId: string, user: AuthenticatedUser) {
-    this.authorizationService.requireRole(user, 'CONTRIBUTOR');
+    this.authorizationService.requireRoleOrAdministrator(user, 'CONTRIBUTOR');
 
     const vocabulary = await this.prisma.vocabularyItem.findUnique({
       where: { id: vocabularyId },
@@ -296,7 +296,7 @@ export class ContentService {
   }
 
   async getSubmittedVocabulary(user: AuthenticatedUser) {
-    this.authorizationService.requireRole(user, 'REVIEWER');
+    this.authorizationService.requireRoleOrAdministrator(user, 'REVIEWER');
 
     return this.prisma.vocabularyItem.findMany({
       where: {
@@ -346,7 +346,7 @@ export class ContentService {
   }
 
   async startVocabularyReview(vocabularyId: string, user: AuthenticatedUser) {
-    this.authorizationService.requireRole(user, 'REVIEWER');
+    this.authorizationService.requireRoleOrAdministrator(user, 'REVIEWER');
 
     const vocabulary = await this.prisma.vocabularyItem.findUnique({
       where: {
@@ -404,7 +404,7 @@ export class ContentService {
     user: AuthenticatedUser,
     dto: ReviewVocabularyDto,
   ) {
-    this.authorizationService.requireRole(user, 'REVIEWER');
+    this.authorizationService.requireRoleOrAdministrator(user, 'REVIEWER');
 
     const vocabulary = await this.prisma.vocabularyItem.findUnique({
       where: {
@@ -468,7 +468,7 @@ export class ContentService {
     user: AuthenticatedUser,
     dto: ReviewVocabularyDto,
   ) {
-    this.authorizationService.requireRole(user, 'REVIEWER');
+    this.authorizationService.requireRoleOrAdministrator(user, 'REVIEWER');
 
     if (!dto.comment?.trim()) {
       throw new ForbiddenException(
@@ -537,7 +537,7 @@ export class ContentService {
     user: AuthenticatedUser,
     dto: ReviewVocabularyDto,
   ) {
-    this.authorizationService.requireRole(user, 'REVIEWER');
+    this.authorizationService.requireRoleOrAdministrator(user, 'REVIEWER');
 
     if (!dto.comment?.trim()) {
       throw new ForbiddenException(

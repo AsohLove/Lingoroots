@@ -62,6 +62,15 @@ export class AuthorizationService {
     }
   }
 
+  requireRoleOrAdministrator(user: AuthenticatedUser, role: Role): void {
+  if (
+    !this.hasRole(user, role) &&
+    !this.hasRole(user, 'ADMINISTRATOR')
+  ) {
+    throw new ForbiddenException('You do not have the required role');
+  }
+}
+
   async requireLanguageAccess(
     userId: string,
     languageId: string,

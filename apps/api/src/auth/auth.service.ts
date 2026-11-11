@@ -101,15 +101,8 @@ export class AuthService {
       throw error;
     }
 
-    void this.emailService
+    await this.emailService
       .sendVerificationCode(user.email, code)
-      .catch((error: unknown) => {
-        this.logger.warn(
-          `Registration completed but verification email delivery failed: ${
-            error instanceof Error ? error.message : String(error)
-          }`,
-        );
-      });
 
     return {
       message:

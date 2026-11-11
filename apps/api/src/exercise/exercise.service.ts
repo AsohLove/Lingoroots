@@ -112,7 +112,7 @@ export class ExerciseService {
     dto: CreateExerciseDto,
     user: AuthenticatedUser,
   ) {
-    this.authorizationService.requireRole(user, 'CONTRIBUTOR');
+    this.authorizationService.requireRoleOrAdministrator(user, 'CONTRIBUTOR');
 
     this.validateExerciseContent(dto);
 
@@ -161,7 +161,7 @@ export class ExerciseService {
     dto: UpdateExerciseDto,
     user: AuthenticatedUser,
   ) {
-    this.authorizationService.requireRole(user, 'CONTRIBUTOR');
+    this.authorizationService.requireRoleOrAdministrator(user, 'CONTRIBUTOR');
 
     const exercise = await this.prisma.exercise.findUnique({
       where: { id: exerciseId },
@@ -260,7 +260,7 @@ export class ExerciseService {
   }
 
   async submit(exerciseId: string, user: AuthenticatedUser) {
-    this.authorizationService.requireRole(user, 'CONTRIBUTOR');
+    this.authorizationService.requireRoleOrAdministrator(user, 'CONTRIBUTOR');
 
     const exercise = await this.prisma.exercise.findUnique({
       where: { id: exerciseId },
@@ -296,7 +296,7 @@ export class ExerciseService {
   }
 
   async createVersion(exerciseId: string, user: AuthenticatedUser) {
-    this.authorizationService.requireRole(user, 'CONTRIBUTOR');
+    this.authorizationService.requireRoleOrAdministrator(user, 'CONTRIBUTOR');
 
     const exercise = await this.prisma.exercise.findUnique({
       where: { id: exerciseId },
@@ -714,7 +714,7 @@ export class ExerciseService {
   }
 
   async getMyExercises(user: AuthenticatedUser) {
-    this.authorizationService.requireRole(user, 'CONTRIBUTOR');
+    this.authorizationService.requireRoleOrAdministrator(user, 'CONTRIBUTOR');
 
     return this.prisma.exercise.findMany({
       where: { createdById: user.id },

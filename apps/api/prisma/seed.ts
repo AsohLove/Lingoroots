@@ -351,43 +351,90 @@ async function main() {
     },
   });
 
-    // ------------------------------------------------------------
+  // ------------------------------------------------------------
+  // Development administrator
+  // ------------------------------------------------------------
+
+  const adminPasswordHash = await argon2.hash('password123');
+
+  let admin = await prisma.user.findUnique({
+    where: {
+      email: 'admin@lingoroots.local',
+    },
+  });
+
+  if (!admin) {
+    admin = await prisma.user.create({
+      data: {
+        name: 'LingoRoots Administrator',
+        email: 'admin@lingoroots.local',
+        passwordHash: adminPasswordHash,
+        emailVerifiedAt: new Date(),
+      },
+    });
+  } else {
+    admin = await prisma.user.update({
+      where: {
+        id: admin.id,
+      },
+      data: {
+        passwordHash: adminPasswordHash,
+        emailVerifiedAt: new Date(),
+      },
+    });
+  }
+
+  await prisma.userRole.upsert({
+    where: {
+      userId_role: {
+        userId: admin.id,
+        role: 'ADMINISTRATOR',
+      },
+    },
+    update: {},
+    create: {
+      userId: admin.id,
+      role: 'ADMINISTRATOR',
+    },
+  });
+
+  // ------------------------------------------------------------
   // Development/demo exercises
   // ------------------------------------------------------------
 
   type SeedExercise = {
-  type: 'MULTIPLE_CHOICE' | 'TEXT_INPUT';
-  prompt: string;
-  explanation: string;
-  order: number;
-  options?: {
-    text: string;
-    isCorrect: boolean;
+    type: 'MULTIPLE_CHOICE' | 'TEXT_INPUT';
+    prompt: string;
+    explanation: string;
     order: number;
-  }[];
-  acceptedAnswers?: string[];
-};
+    options?: {
+      text: string;
+      isCorrect: boolean;
+      order: number;
+    }[];
+    acceptedAnswers?: string[];
+  };
 
-const exercises: SeedExercise[] = [
-  {
-    type: 'MULTIPLE_CHOICE',
-    prompt: 'What does "Mbolo" mean?',
-    explanation: 'Mbolo is used as a greeting meaning Hello.',
-    order: 1,
-    options: [
-      { text: 'Hello', isCorrect: true, order: 1 },
-      { text: 'Goodbye', isCorrect: false, order: 2 },
-      { text: 'Thank you', isCorrect: false, order: 3 },
-    ],
-  },
-  {
-    type: 'TEXT_INPUT',
-    prompt: 'How do you say "Hello" in Ewondo?',
-    explanation: 'Mbolo is a common Ewondo greeting.',
-    order: 2,
-    acceptedAnswers: ['Mbolo'],
-  },
-];
+  const exercises: SeedExercise[] = [
+    {
+      type: 'MULTIPLE_CHOICE',
+      prompt: 'What does "Mbolo" mean?',
+      explanation: 'Mbolo is used as a greeting meaning Hello.',
+      order: 1,
+      options: [
+        { text: 'Hello', isCorrect: true, order: 1 },
+        { text: 'Goodbye', isCorrect: false, order: 2 },
+        { text: 'Thank you', isCorrect: false, order: 3 },
+      ],
+    },
+    {
+      type: 'TEXT_INPUT',
+      prompt: 'How do you say "Hello" in Ewondo?',
+      explanation: 'Mbolo is a common Ewondo greeting.',
+      order: 2,
+      acceptedAnswers: ['Mbolo'],
+    },
+  ];
 
   for (const exercise of exercises) {
     const existingExercise = await prisma.exercise.findFirst({
@@ -409,28 +456,25 @@ const exercises: SeedExercise[] = [
           status: 'PUBLISHED',
           publishedAt: new Date(),
           options: {
-            create: exercise.type === 'MULTIPLE_CHOICE'
-              ? exercise.options
-              : [],
+            create: exercise.type === 'MULTIPLE_CHOICE' ? exercise.options : [],
           },
           acceptedAnswers: {
-            create: exercise.type === 'TEXT_INPUT'
-              ? (exercise.acceptedAnswers ?? []).map((value) => ({
-                  value,
-                  normalizedValue: value
-                    .normalize('NFC')
-                    .trim()
-                    .replace(/\s+/g, ' ')
-                    .toLowerCase(),
-                }))
-              : [],
+            create:
+              exercise.type === 'TEXT_INPUT'
+                ? (exercise.acceptedAnswers ?? []).map((value) => ({
+                    value,
+                    normalizedValue: value
+                      .normalize('NFC')
+                      .trim()
+                      .replace(/\s+/g, ' ')
+                      .toLowerCase(),
+                  }))
+                : [],
           },
         },
       });
     }
   }
-
-
 
   console.log('LingoRoots development seed completed.');
   console.log(`Contributor: ${contributor.email}`);

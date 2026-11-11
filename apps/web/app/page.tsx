@@ -1,201 +1,113 @@
-'use client';
 
-import { useEffect, useState } from 'react';
+import Link from 'next/link';
 
-import Dashboard from '../components/dashboard/Dashboard';
-import { getCurrentUser, login } from '../lib/auth';
-import type { AuthenticatedUser } from '../types/auth';
-
-type LoginScreenProps = {
-  onLogin: (user: AuthenticatedUser) => void;
-};
-
-function LoginScreen({ onLogin }: LoginScreenProps) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function handleSubmit(
-    event: React.FormEvent<HTMLFormElement>,
-  ) {
-    event.preventDefault();
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const result = await login(email, password);
-
-      const currentUser = await getCurrentUser();
-
-      onLogin({
-        ...currentUser,
-        ...result.user,
-      });
-    } catch (error) {
-      setError(
-        error instanceof Error
-          ? error.message
-          : 'Unable to sign in.',
-      );
-    } finally {
-      setLoading(false);
-    }
-  }
-
+export default function Home() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-950 px-6 py-12">
-      <div className="grid w-full max-w-5xl overflow-hidden rounded-2xl bg-white shadow-2xl lg:grid-cols-2">
-        <div className="hidden bg-indigo-600 p-12 text-white lg:flex lg:flex-col lg:justify-between">
-          <div>
-            <div className="mb-8 flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 text-xl font-bold">
-              LR
-            </div>
+    <main className="min-h-screen bg-slate-950 text-white">
+      <header className="mx-auto flex max-w-7xl items-center justify-between px-6 py-6">
+        <Link href="/" className="flex items-center gap-3">
+          <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-600 font-bold">
+            LR
+          </span>
+          <span className="text-xl font-bold">LingoRoots</span>
+        </Link>
 
-            <h1 className="text-4xl font-bold leading-tight">
-              Build better learning experiences for
-              underrepresented languages.
-            </h1>
+        <nav className="flex items-center gap-3">
+          <Link
+            href="/login"
+            className="rounded-lg px-4 py-2 text-sm font-medium text-slate-300 hover:text-white"
+          >
+            Sign in
+          </Link>
 
-            <p className="mt-6 max-w-md text-lg leading-8 text-indigo-100">
-              LingoRoots gives language contributors and reviewers
-              the tools to create, review, and publish high-quality
-              learning content.
-            </p>
-          </div>
+          <Link
+            href="/register"
+            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold hover:bg-indigo-500"
+          >
+            Get started
+          </Link>
+        </nav>
+      </header>
 
-          <p className="text-sm text-indigo-200">
-            LingoRoots Content Platform
+      <section className="mx-auto grid max-w-7xl gap-12 px-6 py-24 lg:grid-cols-2 lg:items-center">
+        <div>
+          <p className="mb-5 text-sm font-semibold uppercase tracking-[0.2em] text-indigo-400">
+            Language learning and preservation
           </p>
+
+          <h1 className="max-w-2xl text-4xl font-bold leading-tight sm:text-6xl">
+            Keep languages alive.
+            <span className="text-indigo-400">
+              {' '}Learn them. Share them.
+            </span>
+          </h1>
+
+          <p className="mt-7 max-w-xl text-lg leading-8 text-slate-300">
+            LingoRoots is a platform for learning and developing
+            quality educational content for underrepresented
+            languages, with a focus on African languages.
+          </p>
+
+          <div className="mt-9 flex flex-wrap gap-4">
+            <Link
+              href="/register"
+              className="rounded-lg bg-indigo-600 px-6 py-3 font-semibold hover:bg-indigo-500"
+            >
+              Create your account
+            </Link>
+
+            <Link
+              href="/login"
+              className="rounded-lg border border-slate-700 px-6 py-3 font-semibold hover:bg-slate-800"
+            >
+              Sign in
+            </Link>
+          </div>
         </div>
 
-        <div className="p-8 sm:p-12">
-          <div className="mx-auto max-w-md">
-            <div className="mb-8">
-              <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-600 text-sm font-bold text-white lg:hidden">
-                LR
-              </div>
+        <div className="rounded-2xl border border-slate-800 bg-slate-900 p-8 sm:p-10">
+          <h2 className="text-2xl font-bold">
+            What is LingoRoots?
+          </h2>
 
-              <h2 className="text-2xl font-bold text-slate-900">
-                Welcome back
-              </h2>
-
-              <p className="mt-2 text-sm text-slate-500">
-                Sign in to your LingoRoots workspace.
+          <div className="mt-8 space-y-7">
+            <div>
+              <h3 className="font-semibold text-indigo-300">
+                Learn languages
+              </h3>
+              <p className="mt-2 leading-7 text-slate-400">
+                Access structured language-learning content
+                organized into courses, levels, units and lessons.
               </p>
             </div>
 
-            <form
-              onSubmit={handleSubmit}
-              className="space-y-5"
-            >
-              <div>
-                <label
-                  htmlFor="email"
-                  className="mb-2 block text-sm font-medium text-slate-700"
-                >
-                  Email
-                </label>
+            <div>
+              <h3 className="font-semibold text-indigo-300">
+                Contribute knowledge
+              </h3>
+              <p className="mt-2 leading-7 text-slate-400">
+                Verified language contributors can help develop
+                vocabulary and learning exercises.
+              </p>
+            </div>
 
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(event) =>
-                    setEmail(event.target.value)
-                  }
-                  placeholder="you@example.com"
-                  autoComplete="email"
-                  required
-                  className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="password"
-                  className="mb-2 block text-sm font-medium text-slate-700"
-                >
-                  Password
-                </label>
-
-                <input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(event) =>
-                    setPassword(event.target.value)
-                  }
-                  placeholder="Enter your password"
-                  autoComplete="current-password"
-                  required
-                  className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-                />
-              </div>
-
-              {error && (
-                <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
-                  {error}
-                </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full rounded-lg bg-indigo-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {loading ? 'Signing in...' : 'Sign in'}
-              </button>
-            </form>
+            <div>
+              <h3 className="font-semibold text-indigo-300">
+                Review learning content
+              </h3>
+              <p className="mt-2 leading-7 text-slate-400">
+                Reviewers help ensure submitted educational
+                content meets quality requirements before publication.
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
+
+      <footer className="border-t border-slate-800 px-6 py-8 text-center text-sm text-slate-500">
+        LingoRoots — Supporting languages and the communities
+        that keep them alive.
+      </footer>
     </main>
-  );
-}
-
-export default function Home() {
-  const [user, setUser] =
-    useState<AuthenticatedUser | null>(null);
-
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function loadUser() {
-      try {
-        const currentUser = await getCurrentUser();
-
-        setUser(currentUser);
-      } catch {
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadUser();
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-950">
-        <p className="text-sm text-slate-400">
-          Loading...
-        </p>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return <LoginScreen onLogin={setUser} />;
-  }
-
-  return (
-    <Dashboard
-      user={user}
-      onLogout={() => setUser(null)}
-    />
   );
 }

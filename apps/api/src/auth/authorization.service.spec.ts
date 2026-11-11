@@ -19,6 +19,22 @@ describe('AuthorizationService', () => {
     roles: ['LEARNER'],
   };
 
+  const administrator: AuthenticatedUser = {
+    id: 'admin-1',
+    name: 'Test Administrator',
+    email: 'admin@example.com',
+    createdAt: new Date(),
+    roles: ['ADMINISTRATOR'],
+  };
+
+  const contributor: AuthenticatedUser = {
+    id: 'contributor-1',
+    name: 'Test Contributor',
+    email: 'contributor@example.com',
+    createdAt: new Date(),
+    roles: ['CONTRIBUTOR'],
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -85,6 +101,38 @@ describe('AuthorizationService', () => {
     });
   });
 
+  describe('requireRoleOrAdministrator', () => {
+    it('allows a user with the required role', () => {
+      expect(() =>
+        service.requireRoleOrAdministrator(contributor, 'CONTRIBUTOR'),
+      ).not.toThrow();
+    });
+
+    it('allows an administrator to perform contributor operations', () => {
+      expect(() =>
+        service.requireRoleOrAdministrator(administrator, 'CONTRIBUTOR'),
+      ).not.toThrow();
+    });
+
+    it('allows an administrator to perform reviewer operations', () => {
+      expect(() =>
+        service.requireRoleOrAdministrator(administrator, 'REVIEWER'),
+      ).not.toThrow();
+    });
+
+    it('rejects a learner without the required role', () => {
+      expect(() =>
+        service.requireRoleOrAdministrator(learner, 'CONTRIBUTOR'),
+      ).toThrow(ForbiddenException);
+    });
+
+    it('does not weaken the strict requireRole check', () => {
+      expect(() => service.requireRole(administrator, 'CONTRIBUTOR')).toThrow(
+        ForbiddenException,
+      );
+    });
+  });
+
   describe('requireLanguageAccess', () => {
     it('should allow language access', async () => {
       prismaMock.languageAuthorization.findFirst.mockResolvedValue({
@@ -143,32 +191,32 @@ describe('AuthorizationService', () => {
   });
 
   describe('hasCourseAccess', () => {
-  it('requires a language-wide grant for courses without variants', async () => {
-    prismaMock.languageAuthorization.findFirst.mockResolvedValue({
-      id: 'auth-1',
+    it('requires a language-wide grant for courses without variants', async () => {
+      prismaMock.languageAuthorization.findFirst.mockResolvedValue({
+        id: 'auth-1',
+      });
+
+      await expect(
+        service.hasCourseAccess('user-1', 'language-1', null),
+      ).resolves.toBe(true);
     });
 
-    await expect(
-      service.hasCourseAccess('user-1', 'language-1', null),
-    ).resolves.toBe(true);
-  });
+    it('allows a variant-specific grant for its variant', async () => {
+      prismaMock.languageAuthorization.findFirst.mockResolvedValue({
+        id: 'auth-2',
+      });
 
-  it('allows a variant-specific grant for its variant', async () => {
-    prismaMock.languageAuthorization.findFirst.mockResolvedValue({
-      id: 'auth-2',
+      await expect(
+        service.hasCourseAccess('user-1', 'language-1', 'variant-1'),
+      ).resolves.toBe(true);
     });
 
-    await expect(
-      service.hasCourseAccess('user-1', 'language-1', 'variant-1'),
-    ).resolves.toBe(true);
-  });
+    it('does not allow a different variant grant', async () => {
+      prismaMock.languageAuthorization.findFirst.mockResolvedValue(null);
 
-  it('does not allow a different variant grant', async () => {
-    prismaMock.languageAuthorization.findFirst.mockResolvedValue(null);
-
-    await expect(
-      service.hasCourseAccess('user-1', 'language-1', 'variant-2'),
-    ).resolves.toBe(false);
+      await expect(
+        service.hasCourseAccess('user-1', 'language-1', 'variant-2'),
+      ).resolves.toBe(false);
+    });
   });
-});
 });
